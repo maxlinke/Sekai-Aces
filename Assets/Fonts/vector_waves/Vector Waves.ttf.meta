@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: e9ac7ff7295c1ca4fbb280248c571c13
+timeCreated: 1525207798
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Vector Waves
+  fontNames:
+  - Vector Waves
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: df31e61244e1ded4a91a1ddcbd09afad, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

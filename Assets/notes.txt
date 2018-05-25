@@ -1,0 +1,38 @@
+>>> TODOs
+
+flattening to foreground along vector to camera (allows fancier bullet spawns)
+tutorial level that has basic controls, shows your hitbox, shows power ups, deadly collisions with obstacles etc.
+main menu with boids as background
+
+>>> loading stuff
+
+have a loadmanager
+that loads all the stuff, puts it into the appropriate places (and notifies objects that they are loaded and ready now)
+it enables all the objects when it is done loading stuff
+
+>>> pooling
+
+have a pool object
+has lists of objects
+has static method new that either instantiates a new object if needed or takes one that is currently in the inactive list
+(bullets, enemies, etc... stuff that appears and disappears often)
+
+>>> shaders
+
+show compiled code
+look around for functions that look like they are what im looking for (such as lightmapping etc)
+
+>> title
+
+daichi ( 大地 ) means earth/ground
+chikyū ( 地球 ) means earth/globe
+sekai ( 世界 ) means world
+Āsudifendā ( アースディフェンダー ) = earth defenders
+Taichi bōei-gun ( 対地防衛軍 ) = earth/ground defense force
+Sekai no ēsu (世界のエース) = world aces / aces of the world
+
+>> gameplay
+
+around 1 sec to cross the screen
+around 1 sec for bullets to go from bottom to top (slowest)
+combo doesn't stack forever. there's a max-combo (like x20 or something)

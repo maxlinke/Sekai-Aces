@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: ef8ff2065e3c04a4a93e1b61c463f19f
+timeCreated: 1525205678
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: TR-909
+  fontNames:
+  - TR-909
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

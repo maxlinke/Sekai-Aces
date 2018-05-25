@@ -1,0 +1,101 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerHealthSystem : MonoBehaviour, IDamageable {
+
+		[Header("Components")]
+	[SerializeField] Player playerController;
+	[SerializeField] ParticleSystem smokeParticleSystem;
+
+		[Header("Variables")]
+	[SerializeField] int maxHitPoints;
+	[SerializeField] float invulnerabilityTimeAfterHit;
+
+	[HideInInspector] public PlayerModel playerModel;
+
+	int hitPoints;
+	int lastHitPoints;
+	float invulnerabilityEnd;
+	bool invulnerable;
+	bool lastDamageWasCollision;
+
+	void Start () {
+		Reset();
+	}
+	
+	void Update () {
+		if(invulnerable && (Time.time > invulnerabilityEnd)){
+			invulnerable = false;
+			playerModel.SetBlinking(false);
+		}
+		if((hitPoints <= 0) && (hitPoints < lastHitPoints)){
+			playerController.InitiateDeath(lastDamageWasCollision);
+		}
+		lastHitPoints = hitPoints;
+	}
+
+	public void SetInvulnerableForSeconds(float seconds){
+		invulnerable = true;
+		invulnerabilityEnd = Time.time + seconds;
+	}
+
+	public bool CanBeHealed(){
+		return (hitPoints < maxHitPoints);
+	}
+
+	public void Heal(){
+		hitPoints = maxHitPoints;
+		smokeParticleSystem.Stop();
+		//TODO repair sound
+	}
+
+	public void Reset(){
+		hitPoints = maxHitPoints;
+		lastHitPoints = hitPoints;
+		invulnerable = false;
+		invulnerabilityEnd = Mathf.NegativeInfinity;
+		smokeParticleSystem.Stop();
+	}
+
+	public void WeaponDamage(int amount){
+		if(!invulnerable){
+			lastDamageWasCollision = false;
+			Damage(amount);
+		}
+	}
+
+	public void CollisionDamage(int amount){
+		if(!invulnerable){
+			lastDamageWasCollision = true;
+			Damage(amount);
+		}
+	}
+
+	public void Kill(bool instantly){
+		if(!invulnerable){
+			lastDamageWasCollision = instantly;
+			Damage(hitPoints);
+		}
+	}
+
+	void Damage(int amount){
+		hitPoints -= amount;
+		if((hitPoints == 1) && (hitPoints < lastHitPoints)){
+			//TODO clank sound
+			smokeParticleSystem.Play();
+		}
+		if(hitPoints > 0){
+			SetInvulnerableForSeconds(invulnerabilityTimeAfterHit);
+			playerModel.SetBlinking(true);
+			//playerModel.Shine(Color.white);
+		}
+	}
+
+	void OnCollisionEnter(Collision collision){
+		if(collision.collider.gameObject.layer == LayerMask.NameToLayer("Obstacle")){
+			Kill(true);
+		}
+	}
+
+}
