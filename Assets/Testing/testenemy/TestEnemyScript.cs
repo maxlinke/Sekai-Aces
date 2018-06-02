@@ -31,7 +31,7 @@ public class TestEnemyScript : MonoBehaviour, IDamageable {
 			bp = SimpleBulletPool.GetEnemyNormalPoolInstance();
 		}
 		if(Time.time > nextFire && bp != null){
-			bp.NewBullet(transform.position);
+			bp.NewBullet(transform.position, new Vector3(Mathf.Sin(Time.time), 0f, Mathf.Cos(Time.time)));
 			nextFire = Time.time + fireInterval;
 		}
 		float lerpVal = Mathf.Clamp01((Time.time - lastDamageTime) / currentFallOffTime);

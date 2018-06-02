@@ -14,17 +14,17 @@ public class SimpleBulletPool : MonoBehaviour {
 	[SerializeField] GameObject bulletPrefab;
 
 		[Header("Settings")]
-	[SerializeField] Vector3 bulletVector;
+	[SerializeField] float bulletSpeed;
 	[SerializeField] int bulletDamage;
+	[SerializeField] float bulletRange;
 
-	List<GameObject> activeBullets;
-	List<GameObject> inactiveBullets;
-	List<GameObject> returningBullets;
+	float sqrBulletRange;
+
+	List<Rigidbody> activeBullets;
+	List<Rigidbody> inactiveBullets;
+	List<Rigidbody> returningBullets;
 
 	int bulletCount;
-
-	float oobX;
-	float oobZ;
 
 	enum BulletPoolType{
 		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_NORMAL
@@ -32,21 +32,18 @@ public class SimpleBulletPool : MonoBehaviour {
 
 	void Start(){
 		bulletCount = 0;
+		sqrBulletRange = bulletRange * bulletRange;
 		CheckInstance();
 		SetInstance();
-		inactiveBullets = new List<GameObject>();
-		activeBullets = new List<GameObject>();
-		returningBullets = new List<GameObject>();
-		oobX = Mathf.Abs(PlayAreaScript.GetDimensions().x / 2f) + 1f;
-		oobZ = Mathf.Abs(PlayAreaScript.GetDimensions().z / 2f) + 1f;
+		inactiveBullets = new List<Rigidbody>();
+		activeBullets = new List<Rigidbody>();
+		returningBullets = new List<Rigidbody>();
 	}
 	
 	void Update(){
 		for(int i=0; i<activeBullets.Count; i++){
-			if(Mathf.Abs(activeBullets[i].transform.localPosition.z) > oobZ || Mathf.Abs(activeBullets[i].transform.localPosition.x) > oobX){
+			if(activeBullets[i].transform.localPosition.sqrMagnitude > sqrBulletRange){
 				returningBullets.Add(activeBullets[i]);
-			}else{
-				activeBullets[i].transform.localPosition += bulletVector * Time.deltaTime;
 			}
 		}
 		for(int i=0; i<returningBullets.Count; i++){
@@ -55,34 +52,28 @@ public class SimpleBulletPool : MonoBehaviour {
 		returningBullets.Clear();
 	}
 
-	void FixedUpdate(){
-		
-	}
-
-	void OnCollisionEnter(Collision collision){
-		GameObject bullet = collision.contacts[0].thisCollider.gameObject;
-		IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
-		if(damageable != null){
-			damageable.WeaponDamage(bulletDamage);
-		}
-		ReturnToInactivePool(bullet);
-	}
-
-	public void NewBullet(Vector3 position){
-		GameObject bullet;
+	public void NewBullet(Vector3 position, Vector3 direction){
+		direction = direction.normalized;
+		Debug.DrawRay(position, direction, Color.red, 0f, false);
+		Rigidbody bullet;
 		if(!TryTakeBulletFromInactivePool(out bullet)){
 			bulletCount++;
-			bullet = Instantiate(bulletPrefab) as GameObject;
-			bullet.transform.parent = this.transform;
-			bullet.name = "bullet " + bulletCount;
+			GameObject bulletObject = Instantiate(bulletPrefab) as GameObject;
+			bulletObject.transform.parent = this.transform;
+			bulletObject.name = "bullet " + bulletCount;
+			SimpleBulletScript bulletScript = bulletObject.GetComponent<SimpleBulletScript>();
+			bulletScript.damage = bulletDamage;
+			bulletScript.pool = this;
+			bullet = bulletObject.GetComponent<Rigidbody>();
 		}
-		bullet.SetActive(true);
-		bullet.transform.localPosition = transform.InverseTransformPoint(position);
+		bullet.gameObject.SetActive(true);
+		bullet.transform.position = position;
 		bullet.transform.localRotation = Quaternion.identity;
+		bullet.velocity = direction * bulletSpeed;
 		activeBullets.Add(bullet);
 	}
 
-	bool TryTakeBulletFromInactivePool(out GameObject bullet){
+	bool TryTakeBulletFromInactivePool(out Rigidbody bullet){
 		int count = inactiveBullets.Count;
 		if(count > 0){
 			int index = count - 1;
@@ -95,9 +86,9 @@ public class SimpleBulletPool : MonoBehaviour {
 		}
 	}
 
-	void ReturnToInactivePool(GameObject bullet){
-		if(bullet.activeSelf){
-			bullet.SetActive(false);
+	public void ReturnToInactivePool(Rigidbody bullet){
+		if(bullet.gameObject.activeSelf){
+			bullet.gameObject.SetActive(false);
 			activeBullets.Remove(bullet);
 			inactiveBullets.Add(bullet);
 		}

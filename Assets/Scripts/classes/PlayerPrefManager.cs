@@ -9,8 +9,8 @@ public class PlayerPrefManager{
 	 *
 	 * Convention : 
 	 * > Use underscores to separate words
-	 * > Always write lowercase
-	 * > Boolean values are to be saved as 1 (true) or 0 (false)
+	 * > Always write lowercase (not even camelcase)
+	 * > Boolean values are to be saved as ints (1=true and 0=false)
 	 * 
 	 */
 

@@ -17,7 +17,6 @@ public class Player : MonoBehaviour {
 	[SerializeField] PlayerMovementSystem playerMovementSystem;
 	[SerializeField] PlayerWeaponSystem playerWeaponSystem;
 	[SerializeField] PlayerHealthSystem playerHealthSystem;
-	[SerializeField] PlayerDeathSystem playerDeathSystem;
 
 		[Header("Plane Prefabs")]
 	[SerializeField] GameObject spectrePlanePrefab;
@@ -33,31 +32,41 @@ public class Player : MonoBehaviour {
 	[SerializeField] GameObject razorbackSPWPrefab;
 	[SerializeField] GameObject arrowheadSPWPrefab;
 
-	public int playerNumber{get{return _playerNumber;}}
+		[Header("Debug Stuff")]
+	[SerializeField] bool selfInitialize;
+	[SerializeField] PlayerInput.InputType presetInputType;
+	[SerializeField] Player.PlaneType presetPlaneType;
+	[SerializeField] int presetPlayerNumber;
+	[SerializeField] GameplayMode presetMode;
+
+
+	public int PlayerNumber{get{return _playerNumber;}}
+	public GameplayMode Mode{set{playerMovementSystem.Mode = value;playerWeaponSystem.Mode = value;}}
+	public bool IsDead{get{return playerHealthSystem.IsDead();}}
+	public bool IsRespawning{get{return isRespawning;}}
+	public bool IsGameover{get{return (IsDead && (lives == 0));}}
+
+	int lives;
 	int _playerNumber;
-
+	bool isRespawning;
 	PlayerModel playerModel;
+	GameController gameController;
 
-	public static PlaneType ParsePlaneType(string name){
-		return (PlaneType)(System.Enum.Parse(typeof(PlaneType), name));
-	}
-
-	void Start(){
-		
+	void Awake(){
+		if(selfInitialize){
+			Debug.Log("selfinit");
+			Initialize(presetInputType, presetPlaneType);
+			SetFurtherInitData(presetPlayerNumber, null);
+			playerMovementSystem.Mode = presetMode;
+		}
 	}
 
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.F) && playerNumber == 1){
+		if(Input.GetKeyDown(KeyCode.F) && PlayerNumber == 1){
 			playerHealthSystem.WeaponDamage(0);
 		}
-		if(Input.GetKeyDown(KeyCode.G) && playerNumber == 1){
+		if(Input.GetKeyDown(KeyCode.G) && PlayerNumber == 1){
 			playerHealthSystem.WeaponDamage(999);
-		}
-		if(Input.GetKeyDown(KeyCode.Alpha1) && playerNumber == 1){
-			Time.timeScale = 1f;
-		}
-		if(Input.GetKeyDown(KeyCode.Alpha2) && playerNumber == 1){
-			Time.timeScale = 0.1f;
 		}
 	}
 
@@ -95,19 +104,25 @@ public class Player : MonoBehaviour {
 		playerMovementSystem.playerModel = playerModel;
 		playerWeaponSystem.playerModel = playerModel;
 		playerHealthSystem.playerModel = playerModel;
-		playerDeathSystem.playerModel = playerModel;
 		PlayerSpecialWeapon playerSPW = SPWObject.GetComponent<PlayerSpecialWeapon>();
 		playerWeaponSystem.specialWeapon = playerSPW;
 	}
 
-	public void LevelResetInit(){
+	public void SetInvulnerableForSeconds(float seconds){
+		playerHealthSystem.SetInvulnerableForSeconds(seconds);
+	}
+
+	public void LevelResetInit(int maxLives){
+		lives = maxLives;
+		isRespawning = false;
 		hitbox.enabled = true;
+		gameObject.layer = LayerMask.NameToLayer("Friendly");
 		ResetAllComponents();
 	}
 
-	public void SetFurtherInitData(int playerNumber, BoxCollider playAreaCollider){
+	public void SetFurtherInitData(int playerNumber, GameController gameController){
 		this._playerNumber = playerNumber;
-		playerMovementSystem.playAreaCollider = playAreaCollider;
+		this.gameController = gameController;
 	}
 
 	public void SetRegularComponentsActive(bool value){
@@ -117,40 +132,41 @@ public class Player : MonoBehaviour {
 	}
 
 	public void InitiateRespawn(){
-		gameObject.layer = LayerMask.NameToLayer("FriendlyDodging");	//TODO other layer?
-		hitbox.enabled = false;
-		if(!playerDeathSystem.IsExploded()){
-			playerDeathSystem.Explode(false);
-		}
-		SetRegularComponentsActive(false);
 		ResetAllComponents();
+		SetRegularComponentsActive(false);
 		playerModel.SetBlinking(true);
+		gameObject.layer = LayerMask.NameToLayer("FriendlyRespawning");
+		hitbox.enabled = false;
+		isRespawning = true;
+		lives--;
+	}
+
+	public void FinalizeRespawn(){
+		SetRegularComponentsActive(true);
+		hitbox.enabled = true;
+		isRespawning = false;
 	}
 
 	public void FinishRespawn(){
 		gameObject.layer = LayerMask.NameToLayer("Friendly");
-		hitbox.enabled = true;
-		SetRegularComponentsActive(true);
-		playerHealthSystem.SetInvulnerableForSeconds(1f);	//HACK hardcoded. maybe find a better way
+		playerModel.SetBlinking(false);
 	}
 
 	public void InitiateDeath(bool explode){
-		gameObject.layer = LayerMask.NameToLayer("Background");
 		SetRegularComponentsActive(false);
-		if(explode){
-			playerDeathSystem.Explode(true);
-		}else{
-			playerDeathSystem.Crash();
+		//TODO spawn explosion
+		//TODO update gui
+		playerModel.Hide();
+		if(lives > 0){
+			gameController.RequestRespawn(this);
 		}
-		GameController.RequestRespawn(this);
 	}
 
 	void ResetAllComponents(){
-		playerModel.Reset();
-		playerMovementSystem.Reset();
-		playerWeaponSystem.Reset();
-		playerHealthSystem.Reset();
-		playerDeathSystem.Reset();
+		playerModel.RespawnReset();
+		playerMovementSystem.RespawnReset();
+		playerWeaponSystem.RespawnReset();
+		playerHealthSystem.RespawnReset();
 	}
 
 	GameObject InstantiatePrefabAsChild(GameObject prefab){
@@ -158,6 +174,10 @@ public class Player : MonoBehaviour {
 		instantiated.transform.localPosition = Vector3.zero;
 		instantiated.transform.localRotation = Quaternion.identity;
 		return instantiated;
+	}
+
+	public static PlaneType ParsePlaneType(string name){
+		return (PlaneType)(System.Enum.Parse(typeof(PlaneType), name));
 	}
 
 }

@@ -21,7 +21,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 	bool lastDamageWasCollision;
 
 	void Start () {
-		Reset();
+		RespawnReset();
 	}
 	
 	void Update () {
@@ -30,6 +30,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 			playerModel.SetBlinking(false);
 		}
 		if((hitPoints <= 0) && (hitPoints < lastHitPoints)){
+			smokeParticleSystem.Stop();
 			playerController.InitiateDeath(lastDamageWasCollision);
 		}
 		lastHitPoints = hitPoints;
@@ -38,6 +39,10 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 	public void SetInvulnerableForSeconds(float seconds){
 		invulnerable = true;
 		invulnerabilityEnd = Time.time + seconds;
+	}
+
+	public bool IsDead(){
+		return (hitPoints <= 0);
 	}
 
 	public bool CanBeHealed(){
@@ -50,7 +55,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		//TODO repair sound
 	}
 
-	public void Reset(){
+	public void RespawnReset(){
 		hitPoints = maxHitPoints;
 		lastHitPoints = hitPoints;
 		invulnerable = false;
@@ -94,7 +99,8 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 
 	void OnCollisionEnter(Collision collision){
 		if(collision.collider.gameObject.layer == LayerMask.NameToLayer("Obstacle")){
-			Kill(true);
+			//Kill(true);
+			Debug.Log("obstacle collision");
 		}
 	}
 

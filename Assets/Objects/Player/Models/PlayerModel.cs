@@ -21,7 +21,7 @@ public class PlayerModel : MonoBehaviour {
 
 	void Start(){
 		shinyPropBlock = new MaterialPropertyBlock();
-		Reset();
+		RespawnReset();
 	}
 
 	void Update(){
@@ -46,7 +46,7 @@ public class PlayerModel : MonoBehaviour {
 		shinyMR.enabled = value;
 	}
 
-	public void Reset(){
+	public void RespawnReset(){
 		Unhide();
 		normalMR.material = normalMat;
 		transform.localEulerAngles = Vector3.zero;

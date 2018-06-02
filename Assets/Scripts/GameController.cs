@@ -4,102 +4,118 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour {
 
-	static GameController instance;
-
 		[Header("Prefabs")]
 	[SerializeField] GameObject playerPrefab;
 	[SerializeField] List<GameObject> bulletPoolPrefabs;
 
 		[Header("Scene References")]
-	[SerializeField] GameObject foreground;
-	[SerializeField] BoxCollider playArea;
-	[SerializeField] GameObject playerSpawn;
-	[SerializeField] GameObject playerRespawn;
+	[SerializeField] PlayArea playArea;
 
 		[Header("Game Settings")]
+	[SerializeField] float gameplayModeTransitionDuration;
 	[SerializeField] float respawnDelay;
 	[SerializeField] float respawnDuration;
+	[SerializeField] float afterRespawnGracePeriod;
+
+		[Header("Level Settings")]
+	[SerializeField] GameplayMode initialMode;	//TODO respawn points for the different things... fuck... OR just say screw it and do the best with the existing ones (flatten x when in side mode)
 
 	GameDifficulty.DifficultyLevel difficulty;
 	Player[] players;
-	int[] playerLives;
-
+	float[] playerOffsets;
+	float[] playerRespawnStartTimes;
 	int playerMaxLives;
 
 	void Start(){
-		if(instance != null) throw new UnityException("singleton violation");
-		instance = this;
-
 		LoadDifficulty();
 		LoadBulletPools();
 		LoadPlayers();
-		playerLives = new int[players.Length];
 
 		ResetLevel();
 	}
 
-	//TODO load coroutines for textures maybe? and only start game upon successfully finished all that stuff
-
 	void Update(){
-		
+		if(Input.GetKeyDown(KeyCode.Alpha1)) TransitionToGameplayMode(GameplayMode.TOPDOWN);
+		if(Input.GetKeyDown(KeyCode.Alpha2)) TransitionToGameplayMode(GameplayMode.SIDE);
+		if(Input.GetKeyDown(KeyCode.Alpha3)) TransitionToGameplayMode(GameplayMode.BACK);
+		if(Input.GetKeyDown(KeyCode.Keypad1)) Time.timeScale = 1f;
+		if(Input.GetKeyDown(KeyCode.Keypad2)) Time.timeScale = 0.1f;
+		if(Input.GetKeyDown(KeyCode.R)) ResetLevel();
 	}
 
 	public void ResetLevel(){
+		StopAllCoroutines();
+
+		playArea.SetCamsToMode(initialMode);
+		playArea.SetAreaToMode(initialMode);
+		playArea.SetMode(initialMode);
+
 		for(int i=0; i<players.Length; i++){
-			Player pc = players[i];
-			pc.LevelResetInit();
-			pc.SetRegularComponentsActive(true);
-			playerLives[i] = playerMaxLives;	//TODO update gui
+			Player player = players[i];
+			player.LevelResetInit(playerMaxLives);
+			player.SetRegularComponentsActive(true);
+			player.Mode = initialMode;
+			playArea.PutPlayerObjectToSpawnPoint(player.gameObject, playerOffsets[i]);
 		}
+
 		//TODO reset all enemy stuff
 		//reset the position of the foreground on the spline (reset the foreground script ?)
 		//dont, i repeat DO NOT restart the music. that shit loops...
 	}
 
-	public static void RequestRespawn(Player pc){
-		instance.RespawnRequested(pc);
+	public void TransitionToGameplayMode(GameplayMode newMode){
+		//TODO disable enemy spawns
+		StartCoroutine(WaitForRightConditionsAndTransition(newMode));
 	}
 
-	void RespawnRequested(Player pc){
-		int totalPlayerLives = GetTotalPlayerLives();
-		if(totalPlayerLives == 0){
-			Debug.Log("game over");
-		}else{
-			int playerIndex = pc.playerNumber - 1;
-			if(playerLives[playerIndex] > 0){
-				playerLives[playerIndex]--;
-				StartCoroutine(RespawnPlayer(pc));
+	public void RequestRespawn(Player pc){
+		int playerIndex = pc.PlayerNumber - 1;
+		playerRespawnStartTimes[playerIndex] = Time.time + respawnDelay;
+		StartCoroutine(WaitAndRespawnPlayerCoroutine(pc));
+	}
+
+	IEnumerator WaitForRightConditionsAndTransition(GameplayMode newMode){
+		bool respawnInProgress = RespawnIsInProgress();
+		while(respawnInProgress){
+			yield return null;
+			respawnInProgress = RespawnIsInProgress();
+		}
+		StartCoroutine(playArea.TransitionCamerasToMode(newMode, gameplayModeTransitionDuration));
+		for(int i=0; i<players.Length; i++){
+			Player player = players[i];
+			if(player.IsDead){
+				playerRespawnStartTimes[i] = Mathf.Infinity;
 			}else{
-				Debug.Log("player " + pc.playerNumber + " has no lives left");
+				player.SetRegularComponentsActive(false);
+				StartCoroutine(playArea.TransitionPlayerToMode(player.gameObject, newMode, gameplayModeTransitionDuration));
 			}
 		}
-	}
-
-	int GetTotalPlayerLives(){
-		int totalPlayerLives = 0;
-		for(int i=0; i<playerLives.Length; i++){
-			totalPlayerLives += playerLives[i];
+		yield return new WaitForSeconds(gameplayModeTransitionDuration);
+		for(int i=0; i<players.Length; i++){
+			Player player = players[i];
+			if(player.IsDead){
+				playerRespawnStartTimes[i] = Time.time;
+			}else{
+				player.SetRegularComponentsActive(true);
+			}
+			player.Mode = newMode;
 		}
-		return totalPlayerLives;
+		playArea.SetAreaToMode(newMode);
+		playArea.SetMode(newMode);
 	}
 
-	IEnumerator RespawnPlayer(Player pc){
-		yield return new WaitForSeconds(respawnDelay);
-		pc.gameObject.SetActive(true);
-		pc.InitiateRespawn();
-		pc.transform.parent = foreground.transform;
-		pc.gameObject.transform.localPosition = playerRespawn.transform.localPosition;
-		pc.gameObject.transform.localRotation = Quaternion.identity;
-		float progress = 0f;
-		float respawnStart = Time.time;
-		while(progress < 1f){
-			//pc.gameObject.transform.localPosition = (progress * playerSpawn.transform.localPosition) + ((1f - progress) * playerRespawn.transform.localPosition);
-			//progress = ((Time.time - respawnStart) / respawnDuration);
-			pc.gameObject.transform.localPosition = Vector3.Lerp(playerRespawn.transform.localPosition, playerSpawn.transform.localPosition, progress);
-			progress += (Time.deltaTime / respawnDuration);
+	IEnumerator WaitAndRespawnPlayerCoroutine(Player pc){
+		int playerIndex = pc.PlayerNumber - 1;
+		while(Time.time < playerRespawnStartTimes[playerIndex]){
 			yield return null;
 		}
-		pc.gameObject.transform.localPosition = playerSpawn.transform.localPosition;
+		pc.transform.parent = playArea.gameObject.transform;
+		pc.gameObject.SetActive(true);
+		pc.InitiateRespawn();
+		StartCoroutine(playArea.TransitionPlayerWhileRespawning(pc.gameObject, playerOffsets[playerIndex], respawnDuration));
+		yield return new WaitForSeconds(respawnDuration);
+		pc.FinalizeRespawn();
+		yield return new WaitForSeconds(afterRespawnGracePeriod);
 		pc.FinishRespawn();
 	}
 
@@ -111,50 +127,58 @@ public class GameController : MonoBehaviour {
 
 	void LoadBulletPools(){
 		foreach(GameObject bulletPoolPrefab in bulletPoolPrefabs){
-			InstantiateToForeground(bulletPoolPrefab);
+			InstantiateToPlayArea(bulletPoolPrefab);
 		}
 	}
 
-	void InstantiateToForeground(GameObject prefab){
-		GameObject bulletPool = Instantiate(prefab) as GameObject;
-		bulletPool.transform.parent = foreground.transform;
-		bulletPool.transform.localPosition = Vector3.zero;
-		bulletPool.transform.localRotation = Quaternion.identity;
+	void InstantiateToPlayArea(GameObject prefab){
+		GameObject obj = Instantiate(prefab) as GameObject;
+		obj.transform.parent = playArea.gameObject.transform;
+		obj.transform.localPosition = Vector3.zero;
+		obj.transform.localRotation = Quaternion.identity;
 	}
 
 	void LoadPlayers(){
 		int playerCount = PlayerPrefManager.GetInt("game_playercount");
-		if(playerCount != 1 && playerCount != 2){
+
+		players = new Player[playerCount];
+		playerOffsets = new float[playerCount];
+		playerRespawnStartTimes = new float[playerCount];
+
+		if(playerCount == 1){
+			playerOffsets[0] = 0;
+		}else if(playerCount == 2){
+			playerOffsets[0] = -1;
+			playerOffsets[1] = 1;
+		}else{
 			throw new UnityException("unsupported playercount");
 		}
-		players = new Player[playerCount];
+
 		for(int i=0; i<players.Length; i++){
 			int playerNumber = i+1;
-			players[i] = InstantiatePlayer(playerNumber);
-			players[i].SetFurtherInitData(playerNumber, playArea);
-		}
-		if(playerCount == 2){
-			players[0].transform.localPosition += Vector3.left;
-			players[1].transform.localPosition += Vector3.right;
+			InstantiateAndInitializePlayer(playerNumber, out players[i]);
 		}
 	}
 
-
-
-	Player InstantiatePlayer(int playerNumber){
-		GameObject player = Instantiate(playerPrefab) as GameObject;
-		player.transform.parent = foreground.transform;
-		player.transform.localRotation = Quaternion.identity;
-		player.transform.localPosition = playerSpawn.transform.localPosition;
-		Player pc = player.GetComponent<Player>();
+	void InstantiateAndInitializePlayer(int playerNumber, out Player player){
+		GameObject playerObject = Instantiate(playerPrefab) as GameObject;
 		char numberChar = playerNumber.ToString().ToCharArray()[0];
 		string inputKey = "game_p#_input".Replace('#', numberChar);
 		string planeKey = "game_p#_plane".Replace('#', numberChar);
 		PlayerInput.InputType input = PlayerInput.ParseInputType(PlayerPrefManager.GetString(inputKey));
 		Player.PlaneType plane = Player.ParsePlaneType(PlayerPrefManager.GetString(planeKey));
-		pc.Initialize(input, plane);
-		player.name = "Player " + playerNumber + " (" + plane.ToString() + ", " + input.ToString() + ")";
-		return pc;
+		playerObject.name = "Player " + playerNumber + " (" + plane.ToString() + ", " + input.ToString() + ")";
+		player = playerObject.GetComponent<Player>();
+		player.Initialize(input, plane);
+		player.SetFurtherInitData(playerNumber, this);
+		player.transform.parent = playArea.transform;
+	}
+
+	bool RespawnIsInProgress(){
+		for(int i=0; i<players.Length; i++){
+			if(players[i].IsRespawning) return true;
+		}
+		return false;
 	}
 
 }

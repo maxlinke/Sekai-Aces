@@ -8,17 +8,28 @@ public class PlayerMovementSystem : MonoBehaviour {
 	[SerializeField] Rigidbody rb;
 
 		[Header("Variables")]
-	[SerializeField] float moveSpeedHorizontal;
-	[SerializeField] float moveSpeedVertical;
 	[SerializeField] float dodgeDistance;
 	[SerializeField] float dodgeDuration;
 	[SerializeField] float dodgeCooldown;
 	[SerializeField] float dodgeLerpPower;
 
-	[HideInInspector] public BoxCollider playAreaCollider;
+		[Header("Gameplay Mode Differences")]
+	[SerializeField] Vector3 topDownMoveSpeed;
+	[SerializeField] Vector3 sideMoveSpeed;
+	[SerializeField] Vector3 backMoveSpeed;
+
 	[HideInInspector] public PlayerInput playerInput;
 	[HideInInspector] public PlayerModel playerModel;
 
+	GameplayMode mode;
+	public GameplayMode Mode{
+		set{
+			mode = value;
+			UpdateRBConstraints();
+		}
+	}
+
+	Vector3 dodgeVelocity;
 	Vector3 dodgePos;
 	Vector3 dodgeStartPos;
 	Vector3 dodgeEndPos;
@@ -26,78 +37,67 @@ public class PlayerMovementSystem : MonoBehaviour {
 	bool canDodge;
 	bool isDodging;
 	bool wasDodging;
-	float lastDodge;
+	float nextDodge;
+	float dodgeStartTime;
+
+	bool wantToDodgeLeft;
+	bool wantToDodgeRight;
 
 	void Start(){
-		Reset();
+		RespawnReset();
 	}
 
 	void Update(){
-		rb.velocity = Vector3.zero;
-		rb.angularVelocity = Vector3.zero;
+		wantToDodgeLeft |= playerInput.GetLeftDodgeInputDown();
+		wantToDodgeRight |= playerInput.GetRightDodgeInputDown();
+	}
+
+	void FixedUpdate(){
 		DodgeManager();
 		Vector3 newLocalPos = transform.localPosition;
 		Vector3 modelEulerAngles = Vector3.zero;
+		Vector3 velocity;
 		if(!isDodging){
-			Vector2 moveInput = playerInput.GetMoveInput();
-			Vector3 movement = new Vector3(moveInput.x * moveSpeedHorizontal, 0f, moveInput.y * moveSpeedVertical) * Time.deltaTime;
-			newLocalPos = transform.localPosition + movement;
-			modelEulerAngles = new Vector3(0f, 0f, -moveInput.x * 45f);
+			Vector2 inputVector = playerInput.GetMoveInput();
+			Vector3 transformedInput = TransformInput(inputVector);
+			velocity = GetDesiredVelocity(transformedInput);
+			modelEulerAngles = new Vector3(0f, 0f, -transformedInput.x * 45f);
 		}else{
-			newLocalPos = dodgePos;
+			velocity = dodgeVelocity;
 			modelEulerAngles = new Vector3(0f, 0f, 360f * pointInDodge * Mathf.Sign((dodgeStartPos - dodgeEndPos).x));
 		}
-		Vector3 clipped;
-		if(playAreaCollider != null){
-			clipped = ClipToPlayArea(newLocalPos, playAreaCollider);
-		}else{
-			clipped = newLocalPos;
-			Debug.LogWarning("warning, play area not set, movement not restricted for " + gameObject.name);
-		}
 		wasDodging = isDodging;
-		transform.localPosition = Flatten(clipped);
+		wantToDodgeLeft = false;
+		wantToDodgeRight = false;
 		playerModel.SetLocalEulerAngles(modelEulerAngles);
+		rb.velocity = velocity;
 	}
 
-	public void Reset(){
+	void OnDisable(){
+		rb.velocity = Vector3.zero;
+		playerModel.SetLocalEulerAngles(Vector3.zero);
+	}
+
+	public void RespawnReset(){
 		rb.useGravity = false;
 		rb.velocity = Vector3.zero;
-		rb.constraints = RigidbodyConstraints.FreezeRotation;
-		rb.interpolation = RigidbodyInterpolation.None;
+		rb.interpolation = RigidbodyInterpolation.Interpolate;
+		UpdateRBConstraints();
 		canDodge = true;
 		isDodging = false;
 		wasDodging = false;
-		lastDodge = Mathf.NegativeInfinity;
+		nextDodge = Mathf.NegativeInfinity;
+		wantToDodgeLeft = false;
+		wantToDodgeRight = false;
 	}
 
 	void DodgeManager(){
-		if(!isDodging && (Time.time > (lastDodge + dodgeCooldown))){
-			if(!canDodge){
-				//TODO blip sound
-				playerModel.Shine(Color.grey);
-				canDodge = true;
-			}
-		}else{
-			canDodge = false;
-		}
-		bool leftDodge = playerInput.GetLeftDodgeInputDown();
-		bool rightDodge = playerInput.GetRightDodgeInputDown();
-		if(canDodge && (leftDodge || rightDodge)){	
-			lastDodge = Time.time;
-			isDodging = true;
-			dodgeStartPos = transform.localPosition;
-			dodgeEndPos = transform.localPosition;								//because of the += you can (if you're skilled enough) dodge in place, getting the i-frames but not moving
-			if(leftDodge) dodgeEndPos += (Vector3.left * dodgeDistance);
-			if(rightDodge) dodgeEndPos += (Vector3.right * dodgeDistance);
+		ManageAbilityToDodge();
+		if(canDodge && (wantToDodgeLeft || wantToDodgeRight) && (gameObject.layer == LayerMask.NameToLayer("Friendly"))){	
+			InitiateDodge();
 		}
 		if(isDodging){
-			pointInDodge = (Time.time - lastDodge) / dodgeDuration;
-			if(pointInDodge <= 1f){
-				dodgePos = Vector3.Lerp(dodgeStartPos, dodgeEndPos, Mathf.Pow(pointInDodge, dodgeLerpPower));
-			}else{
-				isDodging = false;
-				dodgePos = dodgeEndPos;
-			}
+			ManageDodgeVelocity();
 		}
 		if(isDodging != wasDodging){
 			if(isDodging) gameObject.layer = LayerMask.NameToLayer("FriendlyDodging");
@@ -105,24 +105,82 @@ public class PlayerMovementSystem : MonoBehaviour {
 		}
 	}
 
-	Vector3 ClipToPlayArea(Vector3 localPosition, BoxCollider playArea){
-		/*
-		if(box.size != Vector3.one || box.center != Vector3.zero) throw new UnityException("please use a default box (center (0,0,0), size (1,1,1))");	//should be better but wobbles at the edges
-		Vector3 boxSpacePoint = box.transform.InverseTransformPoint(transform.TransformPoint(localPosition));
-		Vector3 clampedBoxSpacePoint = new Vector3(Mathf.Clamp(boxSpacePoint.x, -1f, 1f), Mathf.Clamp(boxSpacePoint.y, -1f, 1f), Mathf.Clamp(boxSpacePoint.z, -1f, 1f));
-		return transform.InverseTransformPoint(box.transform.TransformPoint(clampedBoxSpacePoint));
-		*/
-		if(playArea.transform.parent != this.transform.parent) throw new UnityException("play area's parent is different than player's parent");
-		if(playArea.transform.localPosition != Vector3.zero) throw new UnityException("please position the play area at localPosition (0,0,0)");
-		if(playArea.size != Vector3.one || playArea.center != Vector3.zero) throw new UnityException("please use a default boxcollider (center (0,0,0), size (1,1,1))");
-		float maxX = playArea.transform.localScale.x / 2f;
-		float maxY = playArea.transform.localScale.y / 2f;
-		float maxZ = playArea.transform.localScale.z / 2f;
-		return new Vector3(Mathf.Clamp(localPosition.x, -maxX, maxX), Mathf.Clamp(localPosition.y, -maxY, maxY), Mathf.Clamp(localPosition.z, -maxZ, maxZ));
+	void ManageAbilityToDodge(){
+		if(!isDodging && (Time.time > nextDodge)){
+			if(!canDodge){
+				playerModel.Shine(Color.grey);		//TODO blip sound
+				canDodge = true;
+			}
+		}else{
+			canDodge = false;
+		}
 	}
 
-	Vector3 Flatten(Vector3 input){
-		return new Vector3(input.x, 0f, input.z);
+	void InitiateDodge(){
+		isDodging = true;
+		dodgeStartTime = Time.time;
+		nextDodge = Time.time + dodgeDuration + dodgeCooldown;
+		dodgeStartPos = transform.localPosition;
+		dodgeEndPos = transform.localPosition;
+		//the += allows in-place dodging... high level tactics n stuff...
+		if(wantToDodgeLeft) dodgeEndPos += (Vector3.left * dodgeDistance);
+		if(wantToDodgeRight) dodgeEndPos += (Vector3.right * dodgeDistance);
+	}
+
+	void ManageDodgeVelocity(){
+		pointInDodge = (Time.time - dodgeStartTime) / dodgeDuration;
+		Vector3 startPos = transform.localPosition;
+		if(pointInDodge <= 1f){
+			dodgePos = Vector3.Lerp(dodgeStartPos, dodgeEndPos, Mathf.Pow(pointInDodge, dodgeLerpPower));
+		}else{
+			isDodging = false;
+			dodgePos = dodgeEndPos;
+		}
+		dodgeVelocity = (dodgePos - startPos) / Time.fixedDeltaTime;
+	}
+
+	void UpdateRBConstraints(){
+		rb.constraints = RigidbodyConstraints.FreezeRotation;
+		rb.constraints |= GetMovementConstraints();
+	}
+
+	Vector3 TransformInput(Vector2 input){
+		switch(mode){
+		case GameplayMode.TOPDOWN:
+			return new Vector3(input.x, 0f, input.y);
+		case GameplayMode.SIDE:
+			return new Vector3(0f, input.y, input.x);
+		case GameplayMode.BACK:
+			return new Vector3(input.x, input.y, 0f);
+		default:
+			throw new UnityException("Unknown GameplayMode \"" + mode.ToString() + "\"");
+		}
+	}
+
+	Vector3 GetDesiredVelocity(Vector3 transformedInput){
+		switch(mode){
+		case GameplayMode.TOPDOWN:
+			return Vector3.Scale(transformedInput, topDownMoveSpeed);
+		case GameplayMode.SIDE:
+			return Vector3.Scale(transformedInput, sideMoveSpeed);
+		case GameplayMode.BACK:
+			return Vector3.Scale(transformedInput, backMoveSpeed);
+		default:
+			throw new UnityException("Unknown GameplayMode \"" + mode.ToString() + "\"");
+		}
+	}
+
+	RigidbodyConstraints GetMovementConstraints(){
+		switch(mode){
+		case GameplayMode.TOPDOWN:
+			return RigidbodyConstraints.FreezePositionY;
+		case GameplayMode.SIDE:
+			return RigidbodyConstraints.FreezePositionX;
+		case GameplayMode.BACK:
+			return RigidbodyConstraints.FreezePositionZ;
+		default :
+			throw new UnityException("Unknown GameplayMode \"" + mode.ToString() + "\"");
+		}
 	}
 
 }
