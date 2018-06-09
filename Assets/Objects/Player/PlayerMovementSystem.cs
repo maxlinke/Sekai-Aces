@@ -20,6 +20,7 @@ public class PlayerMovementSystem : MonoBehaviour {
 
 	[HideInInspector] public PlayerInput playerInput;
 	[HideInInspector] public PlayerModel playerModel;
+	[HideInInspector] public PlayerGUI gui;
 
 	GameplayMode mode;
 	public GameplayMode Mode{
@@ -96,6 +97,7 @@ public class PlayerMovementSystem : MonoBehaviour {
 		nextDodge = Mathf.NegativeInfinity;
 		wantToDodgeLeft = false;
 		wantToDodgeRight = false;
+		gui.SetDodgeDisplayState(true);
 	}
 
 	void DodgeManager(){
@@ -116,6 +118,7 @@ public class PlayerMovementSystem : MonoBehaviour {
 		if(!isDodging && (Time.time > nextDodge)){
 			if(!canDodge){
 				playerModel.Shine(Color.grey);		//TODO blip sound
+				gui.SetDodgeDisplayState(true);
 				canDodge = true;
 			}
 		}else{
@@ -132,6 +135,8 @@ public class PlayerMovementSystem : MonoBehaviour {
 		//the += allows in-place dodging... high level tactics n stuff...
 		if(wantToDodgeLeft) dodgeEndPos += (GetLeftDodgeVector() * dodgeDistance);
 		if(wantToDodgeRight) dodgeEndPos -= (GetLeftDodgeVector() * dodgeDistance);
+
+		gui.SetDodgeDisplayState(false);
 	}
 
 	void ManageDodgeVelocity(){

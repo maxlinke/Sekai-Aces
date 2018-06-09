@@ -12,6 +12,7 @@ public class PlayerWeaponSystem : MonoBehaviour {
 	[HideInInspector] public PlayerInput playerInput;
 	[HideInInspector] public PlayerModel playerModel;
 	[HideInInspector] public PlayerSpecialWeapon specialWeapon;
+	[HideInInspector] public PlayerGUI gui;
 
 	SimpleBulletPool normalBulletPool;
 	SimpleBulletPool fastBulletPool;
@@ -26,7 +27,6 @@ public class PlayerWeaponSystem : MonoBehaviour {
 
 	bool useFastBullets;
 	bool useIncreasedFireRate;
-//	bool useTripleShot;
 	float nextShot;
 	Vector3 bulletDirectionScale;
 
@@ -37,23 +37,15 @@ public class PlayerWeaponSystem : MonoBehaviour {
 	}
 	
 	void Update () {
-		if(Input.GetKeyDown(KeyCode.M))	useFastBullets = !useFastBullets;
+		if(Input.GetKeyDown(KeyCode.M))	useFastBullets = !useFastBullets;	//TODO remove this. its just for testing
 		if(Input.GetKeyDown(KeyCode.N)) useIncreasedFireRate = !useIncreasedFireRate;
-//		if(Input.GetKeyDown(KeyCode.B)) useTripleShot = !useTripleShot;
+
 		if(playerInput.GetFireInput()){
 			if(Time.time > nextShot){
 				if(useFastBullets){
 					fastBulletPool.NewBullet(transform.position, GetBulletDirection());
-//					if(useTripleShot){
-//						fastBulletPool.NewBullet(transform.position + new Vector3(-0.4f, 0f, -0.2f));
-//						fastBulletPool.NewBullet(transform.position + new Vector3(+0.4f, 0f, -0.2f));
-//					}
 				}else{
 					normalBulletPool.NewBullet(transform.position, GetBulletDirection());
-//					if(useTripleShot){
-//						normalBulletPool.NewBullet(transform.position + new Vector3(-0.4f, 0f, -0.2f));
-//						normalBulletPool.NewBullet(transform.position + new Vector3(+0.4f, 0f, -0.2f));
-//					}
 				}
 				if(useIncreasedFireRate){
 					nextShot = Time.time + (1f / increasedFireRate);
@@ -66,6 +58,8 @@ public class PlayerWeaponSystem : MonoBehaviour {
 			if(!specialWeapon.IsEmpty()){
 				if(specialWeapon.CanFire()){
 					specialWeapon.Fire();
+					gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
+					gui.SetSPWDisplayState(false);
 				}else{
 					//TODO uisounds.playerrorsound() or something like that
 					Debug.Log("wait");
@@ -75,6 +69,8 @@ public class PlayerWeaponSystem : MonoBehaviour {
 				Debug.Log("empty");
 			}
 		}
+		gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
+		gui.SetSPWDisplayState(specialWeapon.CanFire());
 	}
 
 	public void RespawnReset(){
@@ -82,7 +78,8 @@ public class PlayerWeaponSystem : MonoBehaviour {
 		nextShot = Mathf.NegativeInfinity;
 		useFastBullets = false;
 		useIncreasedFireRate = false;
-//		useTripleShot = false;
+		gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
+		gui.SetSPWDisplayState(true);
 	}
 
 	public bool SpecialWeaponCanBeReloaded(){

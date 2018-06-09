@@ -51,12 +51,13 @@ public class Player : MonoBehaviour {
 	bool isRespawning;
 	PlayerModel playerModel;
 	GameController gameController;
+	PlayerGUI gui;
 
 	void Awake(){
 		if(selfInitialize){
 			Debug.Log("selfinit");
 			Initialize(presetInputType, presetPlaneType);
-			SetFurtherInitData(presetPlayerNumber, null);
+			SetFurtherInitData(presetPlayerNumber, null, null);
 			playerMovementSystem.Mode = presetMode;
 		}
 	}
@@ -114,15 +115,20 @@ public class Player : MonoBehaviour {
 
 	public void LevelResetInit(int maxLives){
 		lives = maxLives;
+		gui.SetLivesNumber(lives);
+		gui.SetLivesDisplayState(true);
 		isRespawning = false;
 		hitbox.enabled = true;
 		gameObject.layer = LayerMask.NameToLayer("Friendly");
 		ResetAllComponents();
 	}
 
-	public void SetFurtherInitData(int playerNumber, GameController gameController){
+	public void SetFurtherInitData(int playerNumber, GameController gameController, PlayerGUI gui){
 		this._playerNumber = playerNumber;
 		this.gameController = gameController;
+		this.gui = gui;	//TODO weapon gui = gui, movement gui = gui
+		playerMovementSystem.gui = gui;
+		playerWeaponSystem.gui = gui;
 	}
 
 	public void SetRegularComponentsActive(bool value){
@@ -139,6 +145,8 @@ public class Player : MonoBehaviour {
 		hitbox.enabled = false;
 		isRespawning = true;
 		lives--;
+		gui.SetLivesNumber(lives);
+		gui.SetLivesDisplayState(true);
 	}
 
 	public void FinalizeRespawn(){
@@ -154,8 +162,11 @@ public class Player : MonoBehaviour {
 
 	public void InitiateDeath(bool explode){
 		SetRegularComponentsActive(false);
-		//TODO spawn explosion
-		//TODO update gui
+
+		gui.SetLivesDisplayState(false);
+		gui.SetDodgeDisplayState(false);
+		gui.SetSPWDisplayState(false);
+
 		playerModel.Hide();
 		if(lives > 0){
 			gameController.RequestRespawn(this);

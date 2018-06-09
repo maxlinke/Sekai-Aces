@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour {
 
 		[Header("Scene References")]
 	[SerializeField] PlayArea playArea;
+	[SerializeField] IngameGUI gui;
 
 		[Header("Game Settings")]
 	[SerializeField] float gameplayModeTransitionDuration;
@@ -47,6 +48,7 @@ public class GameController : MonoBehaviour {
 
 	public void ResetLevel(){
 		StopAllCoroutines();
+		gui.gameObject.SetActive(true);
 		Time.timeScale = 1f;
 
 		playArea.SetCamsToMode(initialMode);
@@ -205,7 +207,7 @@ public class GameController : MonoBehaviour {
 		playerObject.name = "Player " + playerNumber + " (" + plane.ToString() + ", " + input.ToString() + ")";
 		player = playerObject.GetComponent<Player>();
 		player.Initialize(input, plane);
-		player.SetFurtherInitData(playerNumber, this);
+		player.SetFurtherInitData(playerNumber, this, gui.ActivateAndGetPlayerGUI(playerNumber));
 		player.transform.parent = playArea.transform;
 	}
 
