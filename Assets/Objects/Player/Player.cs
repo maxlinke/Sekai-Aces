@@ -159,6 +159,8 @@ public class Player : MonoBehaviour {
 		playerModel.Hide();
 		if(lives > 0){
 			gameController.RequestRespawn(this);
+		}else{
+			gameController.NotifyGameover(this);
 		}
 	}
 

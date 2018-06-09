@@ -16,6 +16,7 @@ public class GameController : MonoBehaviour {
 	[SerializeField] float respawnDelay;
 	[SerializeField] float respawnDuration;
 	[SerializeField] float afterRespawnGracePeriod;
+	[SerializeField] float gameoverTimeFadeDuration;
 
 		[Header("Level Settings")]
 	[SerializeField] GameplayMode initialMode;	//TODO respawn points for the different things... fuck... OR just say screw it and do the best with the existing ones (flatten x when in side mode)
@@ -24,13 +25,14 @@ public class GameController : MonoBehaviour {
 	Player[] players;
 	float[] playerOffsets;
 	float[] playerRespawnStartTimes;
+	bool[] playerGameover;
 	int playerMaxLives;
 
 	void Start(){
 		LoadDifficulty();
 		LoadBulletPools();
 		LoadPlayers();
-
+		//TODO wait for intro animation and stuff... how do i deal with that? control it from here?
 		ResetLevel();
 	}
 
@@ -45,6 +47,7 @@ public class GameController : MonoBehaviour {
 
 	public void ResetLevel(){
 		StopAllCoroutines();
+		Time.timeScale = 1f;
 
 		playArea.SetCamsToMode(initialMode);
 		playArea.SetAreaToMode(initialMode);
@@ -55,13 +58,18 @@ public class GameController : MonoBehaviour {
 			player.LevelResetInit(playerMaxLives);
 			player.SetRegularComponentsActive(true);
 			player.Mode = initialMode;
+			player.transform.parent = playArea.transform;
 			playArea.PutPlayerObjectToSpawnPoint(player.gameObject, playerOffsets[i]);
+			playerRespawnStartTimes[i] = 0f;
+			playerGameover[i] = false;
 		}
 
 		//TODO reset all enemy stuff
 		//reset the position of the foreground on the spline (reset the foreground script ?)
 		//dont, i repeat DO NOT restart the music. that shit loops...
 	}
+
+	//TODO check regularly whether game should be over... OR let the player controllers message the gamecontroller that they are out of lives and if both are, then its game over
 
 	public void TransitionToGameplayMode(GameplayMode newMode){
 		//TODO disable enemy spawns
@@ -72,6 +80,32 @@ public class GameController : MonoBehaviour {
 		int playerIndex = pc.PlayerNumber - 1;
 		playerRespawnStartTimes[playerIndex] = Time.time + respawnDelay;
 		StartCoroutine(WaitAndRespawnPlayerCoroutine(pc));
+	}
+
+	public void NotifyGameover(Player pc){
+		int playerIndex = pc.PlayerNumber - 1;
+		playerGameover[playerIndex] = true;
+		bool totalGameover = true;
+		for(int i=0; i<playerGameover.Length; i++){
+			totalGameover &= playerGameover[i];
+		}
+		if(totalGameover){
+			Debug.Log("TOTAL GAME OVER!!!");
+			StartCoroutine(GameOverTimeFadeAndEnableMenu());
+		}
+	}
+
+	IEnumerator GameOverTimeFadeAndEnableMenu(){
+		float progress = 0f;
+		float startTime = Time.unscaledTime;
+		while(progress < 1f){
+			progress = Mathf.Clamp01((Time.unscaledTime - startTime) / gameoverTimeFadeDuration);
+			Time.timeScale = 1f - progress;
+			yield return null;
+		}
+		Time.timeScale = 0f;
+		Debug.Log("DING, MENU OPENED NOW");
+		//TODO open gameover menu (cannot be closed...)
 	}
 
 	IEnumerator WaitForRightConditionsAndTransition(GameplayMode newMode){
@@ -143,6 +177,7 @@ public class GameController : MonoBehaviour {
 
 		players = new Player[playerCount];
 		playerOffsets = new float[playerCount];
+		playerGameover = new bool[playerCount];
 		playerRespawnStartTimes = new float[playerCount];
 
 		if(playerCount == 1){

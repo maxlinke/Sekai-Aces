@@ -75,7 +75,14 @@ public class PlayerMovementSystem : MonoBehaviour {
 
 	void OnDisable(){
 		rb.velocity = Vector3.zero;
+		rb.angularVelocity = Vector3.zero;
 		playerModel.SetLocalEulerAngles(Vector3.zero);
+	}
+
+	void OnEnable(){
+		rb.velocity = Vector3.zero;
+		rb.angularVelocity = Vector3.zero;
+		if(playerModel != null) playerModel.SetLocalEulerAngles(Vector3.zero);
 	}
 
 	public void RespawnReset(){
@@ -123,8 +130,8 @@ public class PlayerMovementSystem : MonoBehaviour {
 		dodgeStartPos = transform.localPosition;
 		dodgeEndPos = transform.localPosition;
 		//the += allows in-place dodging... high level tactics n stuff...
-		if(wantToDodgeLeft) dodgeEndPos += (Vector3.left * dodgeDistance);
-		if(wantToDodgeRight) dodgeEndPos += (Vector3.right * dodgeDistance);
+		if(wantToDodgeLeft) dodgeEndPos += (GetLeftDodgeVector() * dodgeDistance);
+		if(wantToDodgeRight) dodgeEndPos -= (GetLeftDodgeVector() * dodgeDistance);
 	}
 
 	void ManageDodgeVelocity(){
@@ -142,6 +149,19 @@ public class PlayerMovementSystem : MonoBehaviour {
 	void UpdateRBConstraints(){
 		rb.constraints = RigidbodyConstraints.FreezeRotation;
 		rb.constraints |= GetMovementConstraints();
+	}
+
+	Vector3 GetLeftDodgeVector(){
+		switch(mode){
+		case GameplayMode.TOPDOWN:
+			return Vector3.left;
+		case GameplayMode.SIDE:
+			return Vector3.up;
+		case GameplayMode.BACK:
+			return Vector3.left;
+		default:
+			throw new UnityException("Unknown GameplayMode \"" + mode.ToString() + "\"");
+		}
 	}
 
 	Vector3 TransformInput(Vector2 input){
