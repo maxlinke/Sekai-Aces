@@ -6,7 +6,6 @@ public class PlaneSelectRenderer : MonoBehaviour {
 
 		[Header("Components")]
 	[SerializeField] GameObject container;
-	[SerializeField] MeshRenderer arrowheadMR;
 	[SerializeField] MeshRenderer griffonMR;
 	[SerializeField] MeshRenderer razorbackMR;
 	[SerializeField] MeshRenderer spectreMR;
@@ -32,9 +31,6 @@ public class PlaneSelectRenderer : MonoBehaviour {
 		HideAll();
 		MeshRenderer planeMR;
 		switch(planeType){
-		case Player.PlaneType.ARROWHEAD:
-			planeMR = arrowheadMR;
-			break;
 		case Player.PlaneType.GRIFFON:
 			planeMR = griffonMR;
 			break;
@@ -55,7 +51,6 @@ public class PlaneSelectRenderer : MonoBehaviour {
 	}
 
 	void HideAll(){
-		arrowheadMR.enabled = false;
 		griffonMR.enabled = false;
 		razorbackMR.enabled = false;
 		spectreMR.enabled = false;

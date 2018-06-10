@@ -46,6 +46,7 @@ public class StageManager : MonoBehaviour {
 		default:
 			throw new UnityException("unknown stage (" + stage.ToString() + ")");
 		}
+		Time.timeScale = 1f;
 		SceneManager.LoadScene(sceneToLoad.name);
 	}
 

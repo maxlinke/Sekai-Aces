@@ -49,8 +49,10 @@ public class PlayerMovementSystem : MonoBehaviour {
 	}
 
 	void Update(){
-		wantToDodgeLeft |= playerInput.GetLeftDodgeInputDown();
-		wantToDodgeRight |= playerInput.GetRightDodgeInputDown();
+		if(Time.timeScale > 0f){
+			wantToDodgeLeft |= playerInput.GetLeftDodgeInputDown();
+			wantToDodgeRight |= playerInput.GetRightDodgeInputDown();
+		}
 	}
 
 	void FixedUpdate(){

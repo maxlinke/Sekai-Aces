@@ -54,8 +54,8 @@ public class GameStartMenu : MonoBehaviour {
 	//-
 
 	void Awake(){
-		p1Plane = Player.PlaneType.ARROWHEAD;
-		p2Plane = Player.PlaneType.GRIFFON;
+		p1Plane = Player.PlaneType.GRIFFON;
+		p2Plane = Player.PlaneType.WASP;
 		p1Input = PlayerInput.InputType.KEYBOARD;
 		p2Input = PlayerInput.InputType.GAMEPAD1;
 		difficulty = GameDifficulty.DifficultyLevel.NORMAL;

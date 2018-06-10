@@ -14,6 +14,8 @@ public class PlayerKeyboardInput : PlayerInput{
 	KeyCode key_fire;
 	KeyCode key_special;
 
+	KeyCode key_pause;
+
 	public PlayerKeyboardInput() : base(){
 		ReloadControls();
 	}
@@ -27,6 +29,7 @@ public class PlayerKeyboardInput : PlayerInput{
 		key_dodge_right = ParseKeyFromPlayerPrefs("key_dodge_right");
 		key_fire = ParseKeyFromPlayerPrefs("key_fire");
 		key_special = ParseKeyFromPlayerPrefs("key_special");
+		key_pause = ParseKeyFromPlayerPrefs("key_pause");
 	}
 
 	KeyCode ParseKeyFromPlayerPrefs(string key){
@@ -58,6 +61,10 @@ public class PlayerKeyboardInput : PlayerInput{
 
 	public override bool GetSpecialInputDown(){
 		return Input.GetKeyDown(key_special);
+	}
+
+	public override bool GetPauseInputDown(){
+		return Input.GetKeyDown(key_pause);
 	}
 
 }

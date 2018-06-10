@@ -11,6 +11,7 @@ public class PlayerGamepadInput : PlayerInput {
 	KeyCode button_dodge_right;
 	KeyCode button_fire;
 	KeyCode button_special;
+	KeyCode button_pause;
 
 	public PlayerGamepadInput(int playernumber) : base(){
 		ReloadControls(playernumber);
@@ -23,6 +24,7 @@ public class PlayerGamepadInput : PlayerInput {
 		button_dodge_right = ParseButtonFromPlayerPrefs("button_dodge_right", playernumber);
 		button_fire = ParseButtonFromPlayerPrefs("button_fire", playernumber);
 		button_special = ParseButtonFromPlayerPrefs("button_special", playernumber);
+		button_pause = ParseButtonFromPlayerPrefs("button_pause", playernumber);
 	}
 
 	string GetReplacementString(int playernumber){
@@ -68,6 +70,10 @@ public class PlayerGamepadInput : PlayerInput {
 
 	public override bool GetSpecialInputDown(){
 		return Input.GetKeyDown(button_special);
+	}
+
+	public override bool GetPauseInputDown (){
+		return Input.GetKeyDown(button_pause);
 	}
 
 }

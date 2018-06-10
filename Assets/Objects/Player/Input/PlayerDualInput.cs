@@ -36,4 +36,8 @@ public class PlayerDualInput : PlayerInput{
 		return (keyboardInput.GetSpecialInputDown() || gamepadInput.GetSpecialInputDown());
 	}
 
+	public override bool GetPauseInputDown(){
+		return (keyboardInput.GetPauseInputDown() || gamepadInput.GetPauseInputDown());
+	}
+
 }

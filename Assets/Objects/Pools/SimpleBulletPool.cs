@@ -18,16 +18,16 @@ public class SimpleBulletPool : MonoBehaviour {
 	[SerializeField] int bulletDamage;
 	[SerializeField] float bulletRange;
 
+	bool initialized;
 	float sqrBulletRange;
+	int bulletCount;
 
 	List<Rigidbody> activeBullets;
 	List<Rigidbody> inactiveBullets;
 	List<Rigidbody> returningBullets;
 
-	int bulletCount;
-
 	enum BulletPoolType{
-		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_NORMAL
+		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_SLOW
 	}
 
 	void Start(){
@@ -38,6 +38,7 @@ public class SimpleBulletPool : MonoBehaviour {
 		inactiveBullets = new List<Rigidbody>();
 		activeBullets = new List<Rigidbody>();
 		returningBullets = new List<Rigidbody>();
+		initialized = true;
 	}
 	
 	void Update(){
@@ -50,6 +51,18 @@ public class SimpleBulletPool : MonoBehaviour {
 			ReturnToInactivePool(returningBullets[i]);
 		}
 		returningBullets.Clear();
+	}
+
+	public void LevelReset(){
+		if(initialized){
+			for(int i=0; i<activeBullets.Count; i++){
+				returningBullets.Add(activeBullets[i]);
+			}
+			for(int i=0; i<returningBullets.Count; i++){
+				ReturnToInactivePool(returningBullets[i]);
+			}
+			returningBullets.Clear();
+		}
 	}
 
 	public void NewBullet(Vector3 position, Vector3 direction){
@@ -114,7 +127,7 @@ public class SimpleBulletPool : MonoBehaviour {
 		case BulletPoolType.FRIENDLY_FAST:
 			if(friendlyFastPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
 			break;
-		case BulletPoolType.ENEMY_NORMAL:
+		case BulletPoolType.ENEMY_SLOW:
 			if(enemyNormalPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
 			break;
 		default:
@@ -130,7 +143,7 @@ public class SimpleBulletPool : MonoBehaviour {
 		case BulletPoolType.FRIENDLY_FAST:
 			friendlyFastPoolInstance = this;
 			break;
-		case BulletPoolType.ENEMY_NORMAL:
+		case BulletPoolType.ENEMY_SLOW:
 			enemyNormalPoolInstance = this;
 			break;
 		default:

@@ -15,10 +15,14 @@ public class PreMenu : MonoBehaviour {
 	[SerializeField] float fadeInDelay;
 
 	void Awake(){
-		fadeInScreen.gameObject.SetActive(true);
-		pressAnyKeyScreen.SetActive(true);
-		mainMenu.SetActive(false);
-		StartCoroutine(FadeInUI());	
+		if(Time.unscaledTime < 1f){
+			fadeInScreen.gameObject.SetActive(true);
+			pressAnyKeyScreen.SetActive(true);
+			mainMenu.SetActive(false);
+			StartCoroutine(FadeInUI());	
+		}else{
+			OpenMainMenuAndDisableSelf();
+		}
 	}
 
 	void Update(){

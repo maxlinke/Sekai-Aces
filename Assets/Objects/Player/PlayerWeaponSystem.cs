@@ -37,40 +37,42 @@ public class PlayerWeaponSystem : MonoBehaviour {
 	}
 	
 	void Update () {
-		if(Input.GetKeyDown(KeyCode.M))	useFastBullets = !useFastBullets;	//TODO remove this. its just for testing
-		if(Input.GetKeyDown(KeyCode.N)) useIncreasedFireRate = !useIncreasedFireRate;
+		if(Time.timeScale > 0f){
+			if(Input.GetKeyDown(KeyCode.M))	useFastBullets = !useFastBullets;	//TODO remove this. its just for testing
+			if(Input.GetKeyDown(KeyCode.N)) useIncreasedFireRate = !useIncreasedFireRate;
 
-		if(playerInput.GetFireInput()){
-			if(Time.time > nextShot){
-				if(useFastBullets){
-					fastBulletPool.NewBullet(transform.position, GetBulletDirection());
-				}else{
-					normalBulletPool.NewBullet(transform.position, GetBulletDirection());
-				}
-				if(useIncreasedFireRate){
-					nextShot = Time.time + (1f / increasedFireRate);
-				}else{
-					nextShot = Time.time + (1f / normalFireRate);
+			if(playerInput.GetFireInput()){
+				if(Time.time > nextShot){
+					if(useFastBullets){
+						fastBulletPool.NewBullet(transform.position, GetBulletDirection());
+					}else{
+						normalBulletPool.NewBullet(transform.position, GetBulletDirection());
+					}
+					if(useIncreasedFireRate){
+						nextShot = Time.time + (1f / increasedFireRate);
+					}else{
+						nextShot = Time.time + (1f / normalFireRate);
+					}
 				}
 			}
-		}
-		if(playerInput.GetSpecialInputDown()){
-			if(!specialWeapon.IsEmpty()){
-				if(specialWeapon.CanFire()){
-					specialWeapon.Fire();
-					gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
-					gui.SetSPWDisplayState(false);
+			if(playerInput.GetSpecialInputDown()){
+				if(!specialWeapon.IsEmpty()){
+					if(specialWeapon.CanFire()){
+						specialWeapon.Fire();
+						gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
+						gui.SetSPWDisplayState(false);
+					}else{
+						//TODO uisounds.playerrorsound() or something like that
+						Debug.Log("wait");
+					}
 				}else{
 					//TODO uisounds.playerrorsound() or something like that
-					Debug.Log("wait");
+					Debug.Log("empty");
 				}
-			}else{
-				//TODO uisounds.playerrorsound() or something like that
-				Debug.Log("empty");
 			}
+			gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
+			gui.SetSPWDisplayState(specialWeapon.CanFire());
 		}
-		gui.SetSPWAmmoNumber(specialWeapon.GetAmmoCount());
-		gui.SetSPWDisplayState(specialWeapon.CanFire());
 	}
 
 	public void RespawnReset(){

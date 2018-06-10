@@ -55,8 +55,8 @@ public class PlayerPrefManager{
 		strings.Add(new StringKeyValuePair("game_difficulty", GameDifficulty.DifficultyLevel.NORMAL.ToString()));
 		strings.Add(new StringKeyValuePair("game_p1_input", PlayerInput.InputType.KEYBOARD.ToString()));
 		strings.Add(new StringKeyValuePair("game_p2_input", PlayerInput.InputType.GAMEPAD1.ToString()));
-		strings.Add(new StringKeyValuePair("game_p1_plane", Player.PlaneType.ARROWHEAD.ToString()));
-		strings.Add(new StringKeyValuePair("game_p2_plane", Player.PlaneType.ARROWHEAD.ToString()));
+		strings.Add(new StringKeyValuePair("game_p1_plane", Player.PlaneType.GRIFFON.ToString()));
+		strings.Add(new StringKeyValuePair("game_p2_plane", Player.PlaneType.WASP.ToString()));
 	}
 
 	private static void InitializePlayerControls(){
@@ -68,6 +68,7 @@ public class PlayerPrefManager{
 		strings.Add(new StringKeyValuePair("key_dodge_right", "L"));
 		strings.Add(new StringKeyValuePair("key_fire", "Space"));
 		strings.Add(new StringKeyValuePair("key_special", "K"));
+		strings.Add(new StringKeyValuePair("key_pause", "Escape"));
 
 		strings.Add(new StringKeyValuePair("axis_move_x", "Joystick#LX"));
 		strings.Add(new StringKeyValuePair("axis_move_y", "Joystick#LY"));
@@ -75,6 +76,7 @@ public class PlayerPrefManager{
 		strings.Add(new StringKeyValuePair("button_dodge_right", "Joystick#Button5"));
 		strings.Add(new StringKeyValuePair("button_fire", "Joystick#Button0"));
 		strings.Add(new StringKeyValuePair("button_special", "Joystick#Button2"));
+		strings.Add(new StringKeyValuePair("button_pause", "Joystick#Button7"));
 	}
 
 	public static void ResetKey(string key){

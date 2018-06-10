@@ -9,7 +9,6 @@ public class Player : MonoBehaviour {
 		WASP,
 		GRIFFON,
 		RAZORBACK,
-		ARROWHEAD
 	}
 
 		[Header("Components")]
@@ -23,14 +22,12 @@ public class Player : MonoBehaviour {
 	[SerializeField] GameObject waspPlanePrefab;
 	[SerializeField] GameObject griffonPlanePrefab;
 	[SerializeField] GameObject razorbackPlanePrefab;
-	[SerializeField] GameObject arrowheadPlanePrefab;
 
 		[Header("SPW Prefabs")]
 	[SerializeField] GameObject spectreSPWPrefab;
 	[SerializeField] GameObject waspSPWPrefab;
 	[SerializeField] GameObject griffonSPWPrefab;
 	[SerializeField] GameObject razorbackSPWPrefab;
-	[SerializeField] GameObject arrowheadSPWPrefab;
 
 		[Header("Debug Stuff")]
 	[SerializeField] bool selfInitialize;
@@ -52,6 +49,8 @@ public class Player : MonoBehaviour {
 	PlayerModel playerModel;
 	GameController gameController;
 	PlayerGUI gui;
+	PlayerInput playerInput;
+	PlaneType planeType;
 
 	void Awake(){
 		if(selfInitialize){
@@ -63,16 +62,21 @@ public class Player : MonoBehaviour {
 	}
 
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.F) && PlayerNumber == 1){
-			playerHealthSystem.WeaponDamage(0);
-		}
-		if(Input.GetKeyDown(KeyCode.G) && PlayerNumber == 1){
-			playerHealthSystem.WeaponDamage(999);
+		if(Time.timeScale > 0f){
+			if(Input.GetKeyDown(KeyCode.F) && PlayerNumber == 1){
+				playerHealthSystem.WeaponDamage(0);
+			}
+			if(Input.GetKeyDown(KeyCode.G) && PlayerNumber == 1){
+				playerHealthSystem.WeaponDamage(999);
+			}
+			if(playerInput.GetPauseInputDown()){
+				gameController.PauseGame();
+			}
 		}
 	}
 
 	public void Initialize(PlayerInput.InputType inputType, PlaneType planeType){
-		PlayerInput playerInput = PlayerInput.Get(inputType);
+		playerInput = PlayerInput.Get(inputType);
 		playerMovementSystem.playerInput = playerInput;
 		playerWeaponSystem.playerInput = playerInput;
 		GameObject modelObject;
@@ -94,13 +98,10 @@ public class Player : MonoBehaviour {
 			modelObject = InstantiatePrefabAsChild(razorbackPlanePrefab);
 			SPWObject = InstantiatePrefabAsChild(razorbackSPWPrefab);
 			break;
-		case PlaneType.ARROWHEAD:
-			modelObject = InstantiatePrefabAsChild(arrowheadPlanePrefab);
-			SPWObject = InstantiatePrefabAsChild(arrowheadSPWPrefab);
-			break;
 		default:
 			throw new UnityException("unknown plane type");
 		}
+		this.planeType = planeType;
 		playerModel = modelObject.GetComponent<PlayerModel>();
 		playerMovementSystem.playerModel = playerModel;
 		playerWeaponSystem.playerModel = playerModel;
@@ -126,9 +127,10 @@ public class Player : MonoBehaviour {
 	public void SetFurtherInitData(int playerNumber, GameController gameController, PlayerGUI gui){
 		this._playerNumber = playerNumber;
 		this.gameController = gameController;
-		this.gui = gui;	//TODO weapon gui = gui, movement gui = gui
+		this.gui = gui;
 		playerMovementSystem.gui = gui;
 		playerWeaponSystem.gui = gui;
+		gui.Initialize(planeType);
 	}
 
 	public void SetRegularComponentsActive(bool value){

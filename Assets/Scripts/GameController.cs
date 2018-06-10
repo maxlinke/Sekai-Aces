@@ -7,10 +7,12 @@ public class GameController : MonoBehaviour {
 		[Header("Prefabs")]
 	[SerializeField] GameObject playerPrefab;
 	[SerializeField] List<GameObject> bulletPoolPrefabs;
+	[SerializeField] List<SimpleBulletPool> simpleBulletPools;
 
 		[Header("Scene References")]
 	[SerializeField] PlayArea playArea;
 	[SerializeField] IngameGUI gui;
+	[SerializeField] PauseMenu pauseMenu;
 
 		[Header("Game Settings")]
 	[SerializeField] float gameplayModeTransitionDuration;
@@ -30,6 +32,7 @@ public class GameController : MonoBehaviour {
 	int playerMaxLives;
 
 	void Start(){
+		pauseMenu.gameController = this;
 		LoadDifficulty();
 		LoadBulletPools();
 		LoadPlayers();
@@ -48,8 +51,10 @@ public class GameController : MonoBehaviour {
 
 	public void ResetLevel(){
 		StopAllCoroutines();
-		gui.gameObject.SetActive(true);
 		Time.timeScale = 1f;
+
+		gui.gameObject.SetActive(true);
+		pauseMenu.gameObject.SetActive(false);
 
 		playArea.SetCamsToMode(initialMode);
 		playArea.SetAreaToMode(initialMode);
@@ -66,12 +71,27 @@ public class GameController : MonoBehaviour {
 			playerGameover[i] = false;
 		}
 
+		foreach(SimpleBulletPool sbp in simpleBulletPools){
+			sbp.LevelReset();
+		}
+
 		//TODO reset all enemy stuff
 		//reset the position of the foreground on the spline (reset the foreground script ?)
 		//dont, i repeat DO NOT restart the music. that shit loops...
 	}
 
-	//TODO check regularly whether game should be over... OR let the player controllers message the gamecontroller that they are out of lives and if both are, then its game over
+	public void PauseGame(){
+		bool totalGameover = GetTotalGameover();
+		if(!totalGameover){
+			Time.timeScale = 0f;
+			pauseMenu.InitializeForPause();
+			pauseMenu.gameObject.SetActive(true);
+		}
+	}
+
+	public void UnpauseGame(){
+		Time.timeScale = 1f;
+	}
 
 	public void TransitionToGameplayMode(GameplayMode newMode){
 		//TODO disable enemy spawns
@@ -87,14 +107,19 @@ public class GameController : MonoBehaviour {
 	public void NotifyGameover(Player pc){
 		int playerIndex = pc.PlayerNumber - 1;
 		playerGameover[playerIndex] = true;
-		bool totalGameover = true;
-		for(int i=0; i<playerGameover.Length; i++){
-			totalGameover &= playerGameover[i];
-		}
+		bool totalGameover = GetTotalGameover();
 		if(totalGameover){
 			Debug.Log("TOTAL GAME OVER!!!");
 			StartCoroutine(GameOverTimeFadeAndEnableMenu());
 		}
+	}
+
+	bool GetTotalGameover(){
+		bool totalGameover = true;
+		for(int i=0; i<playerGameover.Length; i++){
+			totalGameover &= playerGameover[i];
+		}
+		return totalGameover;
 	}
 
 	IEnumerator GameOverTimeFadeAndEnableMenu(){
@@ -106,8 +131,8 @@ public class GameController : MonoBehaviour {
 			yield return null;
 		}
 		Time.timeScale = 0f;
-		Debug.Log("DING, MENU OPENED NOW");
-		//TODO open gameover menu (cannot be closed...)
+		pauseMenu.InitializeForGameover();
+		pauseMenu.gameObject.SetActive(true);
 	}
 
 	IEnumerator WaitForRightConditionsAndTransition(GameplayMode newMode){
@@ -163,15 +188,20 @@ public class GameController : MonoBehaviour {
 
 	void LoadBulletPools(){
 		foreach(GameObject bulletPoolPrefab in bulletPoolPrefabs){
-			InstantiateToPlayArea(bulletPoolPrefab);
+			GameObject pool = InstantiateToPlayAreaAndGetObject(bulletPoolPrefab);
+			SimpleBulletPool sbp = pool.GetComponent<SimpleBulletPool>();	//TODO abstraction? generic bullet pool?
+			if(sbp != null){
+				simpleBulletPools.Add(sbp);
+			}
 		}
 	}
 
-	void InstantiateToPlayArea(GameObject prefab){
+	GameObject InstantiateToPlayAreaAndGetObject(GameObject prefab){
 		GameObject obj = Instantiate(prefab) as GameObject;
 		obj.transform.parent = playArea.gameObject.transform;
 		obj.transform.localPosition = Vector3.zero;
 		obj.transform.localRotation = Quaternion.identity;
+		return obj;
 	}
 
 	void LoadPlayers(){

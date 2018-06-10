@@ -40,6 +40,6 @@ public abstract class PlayerInput{
 
 	public abstract bool GetSpecialInputDown();
 
-
+	public abstract bool GetPauseInputDown();
 
 }
