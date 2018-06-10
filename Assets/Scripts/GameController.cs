@@ -1,30 +1,36 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEditor;
 
 public class GameController : MonoBehaviour {
 
+	[SerializeField] SceneAsset mainMenuScene;
+
 		[Header("Prefabs")]
 	[SerializeField] GameObject playerPrefab;
-	[SerializeField] List<GameObject> bulletPoolPrefabs;
-	[SerializeField] List<SimpleBulletPool> simpleBulletPools;
+	[SerializeField] List<GameObject> objectPoolPrefabs;
 
 		[Header("Scene References")]
 	[SerializeField] PlayArea playArea;
 	[SerializeField] IngameGUI gui;
 	[SerializeField] PauseMenu pauseMenu;
+	[SerializeField] CameraShakeModule cameraShakeModule;
 
 		[Header("Game Settings")]
 	[SerializeField] float gameplayModeTransitionDuration;
 	[SerializeField] float respawnDelay;
 	[SerializeField] float respawnDuration;
 	[SerializeField] float afterRespawnGracePeriod;
+	[SerializeField] float gameoverDelay;
 	[SerializeField] float gameoverTimeFadeDuration;
 
 		[Header("Level Settings")]
 	[SerializeField] GameplayMode initialMode;	//TODO respawn points for the different things... fuck... OR just say screw it and do the best with the existing ones (flatten x when in side mode)
 
 	GameDifficulty.DifficultyLevel difficulty;
+	List<ObjectPool> objectPools;
 	Player[] players;
 	float[] playerOffsets;
 	float[] playerRespawnStartTimes;
@@ -33,8 +39,9 @@ public class GameController : MonoBehaviour {
 
 	void Start(){
 		pauseMenu.gameController = this;
+		objectPools = new List<ObjectPool>();
 		LoadDifficulty();
-		LoadBulletPools();
+		LoadPools();
 		LoadPlayers();
 		//TODO wait for intro animation and stuff... how do i deal with that? control it from here?
 		ResetLevel();
@@ -44,9 +51,9 @@ public class GameController : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.Alpha1)) TransitionToGameplayMode(GameplayMode.TOPDOWN);
 		if(Input.GetKeyDown(KeyCode.Alpha2)) TransitionToGameplayMode(GameplayMode.SIDE);
 		if(Input.GetKeyDown(KeyCode.Alpha3)) TransitionToGameplayMode(GameplayMode.BACK);
-		if(Input.GetKeyDown(KeyCode.Keypad1)) Time.timeScale = 1f;
-		if(Input.GetKeyDown(KeyCode.Keypad2)) Time.timeScale = 0.1f;
-		if(Input.GetKeyDown(KeyCode.R)) ResetLevel();
+//		if(Input.GetKeyDown(KeyCode.Keypad1)) Time.timeScale = 1f;
+//		if(Input.GetKeyDown(KeyCode.Keypad2)) Time.timeScale = 0.1f;
+//		if(Input.GetKeyDown(KeyCode.R)) RenderSettings.ambientLight = Random.ColorHSV();
 	}
 
 	public void ResetLevel(){
@@ -55,6 +62,7 @@ public class GameController : MonoBehaviour {
 
 		gui.gameObject.SetActive(true);
 		pauseMenu.gameObject.SetActive(false);
+		cameraShakeModule.StopAllShaking();
 
 		playArea.SetCamsToMode(initialMode);
 		playArea.SetAreaToMode(initialMode);
@@ -71,8 +79,8 @@ public class GameController : MonoBehaviour {
 			playerGameover[i] = false;
 		}
 
-		foreach(SimpleBulletPool sbp in simpleBulletPools){
-			sbp.LevelReset();
+		foreach(ObjectPool pool in objectPools){
+			pool.ResetPool();
 		}
 
 		//TODO reset all enemy stuff
@@ -80,21 +88,36 @@ public class GameController : MonoBehaviour {
 		//dont, i repeat DO NOT restart the music. that shit loops...
 	}
 
-	public void PauseGame(){
+	public void TogglePause(){
 		bool totalGameover = GetTotalGameover();
 		if(!totalGameover){
-			Time.timeScale = 0f;
-			pauseMenu.InitializeForPause();
-			pauseMenu.gameObject.SetActive(true);
+			bool paused = pauseMenu.gameObject.activeSelf;
+			if(!paused){
+				PauseGame();
+			}else{
+				UnpauseGame();
+			}
 		}
+	}
+
+	public void PauseGame(){
+		Time.timeScale = 0f;
+		pauseMenu.InitializeForPause();
+		pauseMenu.gameObject.SetActive(true);
 	}
 
 	public void UnpauseGame(){
 		Time.timeScale = 1f;
+		pauseMenu.gameObject.SetActive(false);
+	}
+
+	public void ExitToMenu(){
+		Time.timeScale = 1f;
+		SceneManager.LoadScene(mainMenuScene.name);
 	}
 
 	public void TransitionToGameplayMode(GameplayMode newMode){
-		//TODO disable enemy spawns
+		//TODO disable enemy spawns NO!!!! enemy spawn disable via trigger on track, enemy spawn reenable via trigger on track. all via triggers on track
 		StartCoroutine(WaitForRightConditionsAndTransition(newMode));
 	}
 
@@ -109,7 +132,6 @@ public class GameController : MonoBehaviour {
 		playerGameover[playerIndex] = true;
 		bool totalGameover = GetTotalGameover();
 		if(totalGameover){
-			Debug.Log("TOTAL GAME OVER!!!");
 			StartCoroutine(GameOverTimeFadeAndEnableMenu());
 		}
 	}
@@ -123,6 +145,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	IEnumerator GameOverTimeFadeAndEnableMenu(){
+		yield return new WaitForSeconds(gameoverDelay);
 		float progress = 0f;
 		float startTime = Time.unscaledTime;
 		while(progress < 1f){
@@ -186,12 +209,12 @@ public class GameController : MonoBehaviour {
 		Debug.Log(difficulty);
 	}
 
-	void LoadBulletPools(){
-		foreach(GameObject bulletPoolPrefab in bulletPoolPrefabs){
-			GameObject pool = InstantiateToPlayAreaAndGetObject(bulletPoolPrefab);
-			SimpleBulletPool sbp = pool.GetComponent<SimpleBulletPool>();	//TODO abstraction? generic bullet pool?
-			if(sbp != null){
-				simpleBulletPools.Add(sbp);
+	void LoadPools(){
+		foreach(GameObject poolPrefab in objectPoolPrefabs){
+			GameObject poolObject = InstantiateToPlayAreaAndGetObject(poolPrefab);
+			ObjectPool pool = poolObject.GetComponent<ObjectPool>();
+			if(pool != null){
+				objectPools.Add(pool);
 			}
 		}
 	}

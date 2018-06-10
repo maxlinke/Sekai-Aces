@@ -9,7 +9,9 @@ public class PlayArea : MonoBehaviour {
 
 		[Header("Cameras")]
 	[SerializeField] Camera gameplayCam;
-	[SerializeField] Camera levelCamera;
+	[SerializeField] Camera levelCam;
+	[SerializeField] GameObject gameplayCamContainer;
+	[SerializeField] GameObject levelCamContainer;
 
 		[Header("Lights")]
 	[SerializeField] Light gameplayLight;
@@ -32,7 +34,7 @@ public class PlayArea : MonoBehaviour {
 	*/
 
 	void Start () {
-		levelCamera.fieldOfView = gameplayCam.fieldOfView;
+		levelCam.fieldOfView = gameplayCam.fieldOfView;
 	}
 	
 	void Update () {
@@ -40,10 +42,10 @@ public class PlayArea : MonoBehaviour {
 	}
 
 	void LateUpdate(){
-		Vector3 lvlCamToLight = levelLight.transform.position - levelCamera.transform.position;
+		Vector3 lvlCamToLight = levelLight.transform.position - levelCam.transform.position;
 		Vector3 lvlLightDir = levelLight.transform.forward;
-		Vector3 transformedLvlCamtoLight = levelCamera.transform.InverseTransformDirection(lvlCamToLight);
-		Vector3 transformedLvlLightDir = levelCamera.transform.InverseTransformDirection(lvlLightDir);
+		Vector3 transformedLvlCamtoLight = levelCam.transform.InverseTransformDirection(lvlCamToLight);
+		Vector3 transformedLvlLightDir = levelCam.transform.InverseTransformDirection(lvlLightDir);
 		Vector3 retransformedCamToLight = gameplayCam.transform.TransformDirection(transformedLvlCamtoLight);
 		Vector3 retransformedLightDir = gameplayCam.transform.TransformDirection(transformedLvlLightDir);
 		gameplayLight.transform.position = gameplayCam.transform.position + retransformedCamToLight;
@@ -61,9 +63,9 @@ public class PlayArea : MonoBehaviour {
 
 	public void SetCamsToMode(GameplayMode newMode){
 		GameObject camPoint = GetCorrespondingCamPoint(newMode);
-		gameplayCam.transform.localPosition = camPoint.transform.localPosition;
-		gameplayCam.transform.localRotation = camPoint.transform.localRotation;
-		SyncLevelCamera();
+		gameplayCamContainer.transform.localPosition = camPoint.transform.localPosition;
+		gameplayCamContainer.transform.localRotation = camPoint.transform.localRotation;
+		SyncLevelCamContainer();
 	}
 
 	public void PutPlayerObjectToSpawnPoint(GameObject playerObject, float offset){
@@ -102,22 +104,22 @@ public class PlayArea : MonoBehaviour {
 	}
 
 	public IEnumerator TransitionCamerasToMode(GameplayMode newMode, float transitionDuration){
-		Vector3 startPos = gameplayCam.transform.localPosition;
-		Quaternion startRot = gameplayCam.transform.localRotation;
+		Vector3 startPos = gameplayCamContainer.transform.localPosition;
+		Quaternion startRot = gameplayCamContainer.transform.localRotation;
 		GameObject newPoint = GetCorrespondingCamPoint(newMode);
 		Vector3 endPos = newPoint.transform.localPosition;
 		Quaternion endRot = newPoint.transform.localRotation;
 		float progress = 0f;
 		while(progress < 1f){
 			progress += (Time.deltaTime / transitionDuration);
-			gameplayCam.transform.localPosition = Vector3.Lerp(startPos, endPos, progress);
-			gameplayCam.transform.localRotation = Quaternion.Lerp(startRot, endRot, progress);
-			SyncLevelCamera();
+			gameplayCamContainer.transform.localPosition = Vector3.Lerp(startPos, endPos, progress);
+			gameplayCamContainer.transform.localRotation = Quaternion.Lerp(startRot, endRot, progress);
+			SyncLevelCamContainer();
 			yield return null;
 		}
-		gameplayCam.transform.localPosition = endPos;
-		gameplayCam.transform.localRotation = endRot;
-		SyncLevelCamera();
+		gameplayCamContainer.transform.localPosition = endPos;
+		gameplayCamContainer.transform.localRotation = endRot;
+		SyncLevelCamContainer();
 	}
 
 	Vector3 GetNormalizedTargetPoint(Vector3 origPoint, GameplayMode origMode, GameplayMode targetMode){
@@ -155,9 +157,9 @@ public class PlayArea : MonoBehaviour {
 		return Vector3.Scale(normedPoint, targetAreaScale);
 	}
 
-	void SyncLevelCamera(){
-		levelCamera.transform.localPosition = gameplayCam.transform.localPosition;
-		levelCamera.transform.localRotation = gameplayCam.transform.localRotation;
+	void SyncLevelCamContainer(){
+		levelCamContainer.transform.localPosition = gameplayCamContainer.transform.localPosition;
+		levelCamContainer.transform.localRotation = gameplayCamContainer.transform.localRotation;
 	}
 
 	void DeactivateAllPlayAreas(){

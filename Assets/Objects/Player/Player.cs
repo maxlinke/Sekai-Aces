@@ -29,14 +29,6 @@ public class Player : MonoBehaviour {
 	[SerializeField] GameObject griffonSPWPrefab;
 	[SerializeField] GameObject razorbackSPWPrefab;
 
-		[Header("Debug Stuff")]
-	[SerializeField] bool selfInitialize;
-	[SerializeField] PlayerInput.InputType presetInputType;
-	[SerializeField] Player.PlaneType presetPlaneType;
-	[SerializeField] int presetPlayerNumber;
-	[SerializeField] GameplayMode presetMode;
-
-
 	public int PlayerNumber{get{return _playerNumber;}}
 	public GameplayMode Mode{set{playerMovementSystem.Mode = value;playerWeaponSystem.Mode = value;}}
 	public bool IsDead{get{return playerHealthSystem.IsDead();}}
@@ -52,13 +44,10 @@ public class Player : MonoBehaviour {
 	PlayerInput playerInput;
 	PlaneType planeType;
 
-	void Awake(){
-		if(selfInitialize){
-			Debug.Log("selfinit");
-			Initialize(presetInputType, presetPlaneType);
-			SetFurtherInitData(presetPlayerNumber, null, null);
-			playerMovementSystem.Mode = presetMode;
-		}
+	ParticleEffectPool fireballPool;
+
+	void Start(){
+		fireballPool = ParticleEffectPool.GetFireballPoolMedium();
 	}
 
 	void Update(){
@@ -69,9 +58,9 @@ public class Player : MonoBehaviour {
 			if(Input.GetKeyDown(KeyCode.G) && PlayerNumber == 1){
 				playerHealthSystem.WeaponDamage(999);
 			}
-			if(playerInput.GetPauseInputDown()){
-				gameController.PauseGame();
-			}
+		}
+		if(playerInput.GetPauseInputDown()){
+			gameController.TogglePause();
 		}
 	}
 
@@ -120,7 +109,8 @@ public class Player : MonoBehaviour {
 		gui.SetLivesDisplayState(true);
 		isRespawning = false;
 		hitbox.enabled = true;
-		gameObject.layer = LayerMask.NameToLayer("Friendly");
+		//gameObject.layer = LayerMask.NameToLayer("Friendly");
+		SetLayerIncludingAllChildren(this.gameObject, LayerMask.NameToLayer("Friendly"));
 		ResetAllComponents();
 	}
 
@@ -143,7 +133,8 @@ public class Player : MonoBehaviour {
 		ResetAllComponents();
 		SetRegularComponentsActive(false);
 		playerModel.SetBlinking(true);
-		gameObject.layer = LayerMask.NameToLayer("FriendlyRespawning");
+//		gameObject.layer = LayerMask.NameToLayer("FriendlyRespawning");
+		SetLayerIncludingAllChildren(this.gameObject, LayerMask.NameToLayer("FriendlyRespawning"));
 		hitbox.enabled = false;
 		isRespawning = true;
 		lives--;
@@ -158,7 +149,8 @@ public class Player : MonoBehaviour {
 	}
 
 	public void FinishRespawn(){
-		gameObject.layer = LayerMask.NameToLayer("Friendly");
+//		gameObject.layer = LayerMask.NameToLayer("Friendly");
+		SetLayerIncludingAllChildren(this.gameObject, LayerMask.NameToLayer("Friendly"));
 		playerModel.SetBlinking(false);
 	}
 
@@ -170,6 +162,12 @@ public class Player : MonoBehaviour {
 		gui.SetSPWDisplayState(false);
 
 		playerModel.Hide();
+		hitbox.enabled = false;
+		fireballPool.NewEffect(transform.position, transform.forward);
+		//TODO if explode, explode
+		//else transfer to background layer (and wait for collision?)
+		//OR always explode on background layer, debris flies forward with speed of foreground
+		//50/50 chance of instant explosion if not forced explosion?
 		if(lives > 0){
 			gameController.RequestRespawn(this);
 		}else{
@@ -182,6 +180,14 @@ public class Player : MonoBehaviour {
 		playerMovementSystem.RespawnReset();
 		playerWeaponSystem.RespawnReset();
 		playerHealthSystem.RespawnReset();
+	}
+
+	void SetLayerIncludingAllChildren(GameObject obj, int layer){
+		obj.layer = layer;
+		for(int i=0; i<obj.transform.childCount; i++){
+			GameObject child = obj.transform.GetChild(i).gameObject;
+			SetLayerIncludingAllChildren(child, layer);
+		}
 	}
 
 	GameObject InstantiatePrefabAsChild(GameObject prefab){

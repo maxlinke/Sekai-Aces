@@ -57,6 +57,8 @@ public class PlayerPrefManager{
 		strings.Add(new StringKeyValuePair("game_p2_input", PlayerInput.InputType.GAMEPAD1.ToString()));
 		strings.Add(new StringKeyValuePair("game_p1_plane", Player.PlaneType.GRIFFON.ToString()));
 		strings.Add(new StringKeyValuePair("game_p2_plane", Player.PlaneType.WASP.ToString()));
+
+		floats.Add(new FloatKeyValuePair("game_screenshakemultiplier", 1f));
 	}
 
 	private static void InitializePlayerControls(){

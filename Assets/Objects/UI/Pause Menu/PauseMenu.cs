@@ -19,9 +19,6 @@ public class PauseMenu : MonoBehaviour {
 	[Header("General Components")]
 	[SerializeField] Button[] mainScreenButtons;
 
-
-	[SerializeField] SceneAsset mainMenuScene;
-
 	[HideInInspector] public GameController gameController;
 
 	GameObject firstSelected;
@@ -52,19 +49,6 @@ public class PauseMenu : MonoBehaviour {
 		gameoverElementContainer.SetActive(true);
 	}
 
-	public void Unpause(){
-		gameController.UnpauseGame();
-		this.gameObject.SetActive(false);
-	}
 
-	public void RestartLevel(){
-		gameController.ResetLevel();
-		this.gameObject.SetActive(false);
-	}
-
-	public void ExitToMenu(){
-		Time.timeScale = 1f;
-		SceneManager.LoadScene(mainMenuScene.name);
-	}
 
 }

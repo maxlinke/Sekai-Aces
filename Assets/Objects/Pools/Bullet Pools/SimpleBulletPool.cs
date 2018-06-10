@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleBulletPool : MonoBehaviour {
+public class SimpleBulletPool : ObjectPool {
 
 	static SimpleBulletPool friendlyNormalPoolInstance;
 	static SimpleBulletPool friendlyFastPoolInstance;
@@ -33,8 +33,7 @@ public class SimpleBulletPool : MonoBehaviour {
 	void Start(){
 		bulletCount = 0;
 		sqrBulletRange = bulletRange * bulletRange;
-		CheckInstance();
-		SetInstance();
+		CheckAndSetInstance();
 		inactiveBullets = new List<Rigidbody>();
 		activeBullets = new List<Rigidbody>();
 		returningBullets = new List<Rigidbody>();
@@ -53,11 +52,12 @@ public class SimpleBulletPool : MonoBehaviour {
 		returningBullets.Clear();
 	}
 
-	public void LevelReset(){
+	public override void ResetPool (){
 		if(initialized){
-			for(int i=0; i<activeBullets.Count; i++){
-				returningBullets.Add(activeBullets[i]);
-			}
+//			for(int i=0; i<activeBullets.Count; i++){
+//				returningBullets.Add(activeBullets[i]);
+//			}
+			returningBullets.AddRange(activeBullets);
 			for(int i=0; i<returningBullets.Count; i++){
 				ReturnToInactivePool(returningBullets[i]);
 			}
@@ -67,7 +67,6 @@ public class SimpleBulletPool : MonoBehaviour {
 
 	public void NewBullet(Vector3 position, Vector3 direction){
 		direction = direction.normalized;
-		Debug.DrawRay(position, direction, Color.red, 0f, false);
 		Rigidbody bullet;
 		if(!TryTakeBulletFromInactivePool(out bullet)){
 			bulletCount++;
@@ -119,35 +118,22 @@ public class SimpleBulletPool : MonoBehaviour {
 		return enemyNormalPoolInstance;
 	}
 
-	void CheckInstance(){
+	void CheckAndSetInstance(){
 		switch(type){
 		case BulletPoolType.FRIENDLY_NORMAL: 
 			if(friendlyNormalPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
+			else friendlyNormalPoolInstance = this;
 			break;
 		case BulletPoolType.FRIENDLY_FAST:
 			if(friendlyFastPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
+			else friendlyFastPoolInstance = this;
 			break;
 		case BulletPoolType.ENEMY_SLOW:
 			if(enemyNormalPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
+			else enemyNormalPoolInstance = this;
 			break;
 		default:
-			throw new UnityException("unknown bullet pool type");
-		}
-	}
-
-	void SetInstance(){
-		switch(type){
-		case BulletPoolType.FRIENDLY_NORMAL: 
-			friendlyNormalPoolInstance = this;
-			break;
-		case BulletPoolType.FRIENDLY_FAST:
-			friendlyFastPoolInstance = this;
-			break;
-		case BulletPoolType.ENEMY_SLOW:
-			enemyNormalPoolInstance = this;
-			break;
-		default:
-			throw new UnityException("unknown bullet pool type");
+			throw new UnityException("unknown bullet pool type \"" + type.ToString() + "\"");
 		}
 	}
 

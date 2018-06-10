@@ -12,6 +12,14 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 	[SerializeField] int maxHitPoints;
 	[SerializeField] float invulnerabilityTimeAfterHit;
 
+		[Header("Camera Shake")]
+	[SerializeField] float hitShakeSpeed;
+	[SerializeField] float hitShakeStrength;
+	[SerializeField] float hitShakeDuration;
+	[SerializeField] float deathShakeSpeed;
+	[SerializeField] float deathShakeStrength;
+	[SerializeField] float deathShakeDuration;
+
 	[HideInInspector] public PlayerModel playerModel;
 
 	int hitPoints;
@@ -32,6 +40,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		if((hitPoints <= 0) && (hitPoints < lastHitPoints)){
 			smokeParticleSystem.Stop();
 			playerController.InitiateDeath(lastDamageWasCollision);
+			CameraShakeModule.Shake(deathShakeStrength, deathShakeDuration, deathShakeSpeed);
 		}
 		lastHitPoints = hitPoints;
 	}
@@ -86,6 +95,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 
 	void Damage(int amount){
 		hitPoints -= amount;
+		CameraShakeModule.Shake(hitShakeStrength, hitShakeDuration, hitShakeSpeed);
 		if((hitPoints == 1) && (hitPoints < lastHitPoints)){
 			//TODO clank sound
 			smokeParticleSystem.Play();
@@ -93,7 +103,6 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		if(hitPoints > 0){
 			SetInvulnerableForSeconds(invulnerabilityTimeAfterHit);
 			playerModel.SetBlinking(true);
-			//playerModel.Shine(Color.white);
 		}
 	}
 
