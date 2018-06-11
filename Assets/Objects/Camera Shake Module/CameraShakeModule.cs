@@ -35,12 +35,13 @@ public class CameraShakeModule : MonoBehaviour, IPlayerPrefSettingsObserver {
 			float perlinInput = Time.time * shakeSpeed;
 			float perlinX = Mathf.PerlinNoise(perlinInput, 0f);
 			float perlinY = Mathf.PerlinNoise(0f, perlinInput);
+			if(float.IsNaN(perlinX)) perlinX = 0f;
+			if(float.IsNaN(perlinY)) perlinY = 0f;
 			float progress = Mathf.Clamp01((Time.time - shakeStart) / shakeDuration);
 			shakeOffset += new Vector3(perlinX, perlinY) * (1f - progress) * shakeStrength * universalShakeMultiplier;
 			yield return null;
 		}
 	}
-
 
 	public static void Shake(float strength, float duration, float speed){
 		instance.StartShakeCoroutine(strength, duration, speed);

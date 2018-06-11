@@ -17,8 +17,10 @@ public class GameController : MonoBehaviour {
 	[SerializeField] IngameGUI gui;
 	[SerializeField] PauseMenu pauseMenu;
 	[SerializeField] CameraShakeModule cameraShakeModule;
+	[SerializeField] IntroSequence introSequence;
 
 		[Header("Game Settings")]
+	[SerializeField] float levelResetPlayerControlDelay;
 	[SerializeField] float gameplayModeTransitionDuration;
 	[SerializeField] float respawnDelay;
 	[SerializeField] float respawnDuration;
@@ -39,12 +41,13 @@ public class GameController : MonoBehaviour {
 
 	void Start(){
 		pauseMenu.gameController = this;
+		introSequence.gameController = this;
 		objectPools = new List<ObjectPool>();
 		LoadDifficulty();
 		LoadPools();
 		LoadPlayers();
 		//TODO wait for intro animation and stuff... how do i deal with that? control it from here?
-		ResetLevel();
+		introSequence.StartIntroSequence();
 	}
 
 	void Update(){
@@ -53,6 +56,7 @@ public class GameController : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.Alpha3)) TransitionToGameplayMode(GameplayMode.BACK);
 //		if(Input.GetKeyDown(KeyCode.Keypad1)) Time.timeScale = 1f;
 //		if(Input.GetKeyDown(KeyCode.Keypad2)) Time.timeScale = 0.1f;
+//		if(Input.GetKeyDown(KeyCode.R)) ResetLevel();
 //		if(Input.GetKeyDown(KeyCode.R)) RenderSettings.ambientLight = Random.ColorHSV();
 	}
 
@@ -68,19 +72,23 @@ public class GameController : MonoBehaviour {
 		playArea.SetAreaToMode(initialMode);
 		playArea.SetMode(initialMode);
 
+		foreach(ObjectPool pool in objectPools){
+			pool.ResetPool();
+		}
+
 		for(int i=0; i<players.Length; i++){
 			Player player = players[i];
 			player.LevelResetInit(playerMaxLives);
-			player.SetRegularComponentsActive(true);
 			player.Mode = initialMode;
 			player.transform.parent = playArea.transform;
 			playArea.PutPlayerObjectToSpawnPoint(player.gameObject, playerOffsets[i]);
 			playerRespawnStartTimes[i] = 0f;
 			playerGameover[i] = false;
-		}
+			player.enabled = false;
+			player.SetRegularComponentsActive(false);
 
-		foreach(ObjectPool pool in objectPools){
-			pool.ResetPool();
+			StartCoroutine(playArea.TransitionPlayerWhileRespawning(player.gameObject, playerOffsets[i], levelResetPlayerControlDelay));
+			StartCoroutine(WaitAndEnablePlayerControl(player, levelResetPlayerControlDelay));
 		}
 
 		//TODO reset all enemy stuff
@@ -142,6 +150,12 @@ public class GameController : MonoBehaviour {
 			totalGameover &= playerGameover[i];
 		}
 		return totalGameover;
+	}
+
+	IEnumerator WaitAndEnablePlayerControl(Player pc, float delay){
+		yield return new WaitForSeconds(delay);
+		pc.enabled = true;
+		pc.SetRegularComponentsActive(true);
 	}
 
 	IEnumerator GameOverTimeFadeAndEnableMenu(){
@@ -247,6 +261,8 @@ public class GameController : MonoBehaviour {
 		for(int i=0; i<players.Length; i++){
 			int playerNumber = i+1;
 			InstantiateAndInitializePlayer(playerNumber, out players[i]);
+			players[i].enabled = false;
+			players[i].SetRegularComponentsActive(false);
 		}
 	}
 
