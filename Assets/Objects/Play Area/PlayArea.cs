@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayArea : MonoBehaviour {
+		
+	[SerializeField] GameObject worldObstacleContainer;
 
+		[Header("Player Spawnpoints")]
 	[SerializeField] GameObject playerSpawn;
 	[SerializeField] GameObject playerRespawn;
 
@@ -42,14 +45,35 @@ public class PlayArea : MonoBehaviour {
 	}
 
 	void LateUpdate(){
-		Vector3 lvlCamToLight = levelLight.transform.position - levelCam.transform.position;
-		Vector3 lvlLightDir = levelLight.transform.forward;
-		Vector3 transformedLvlCamtoLight = levelCam.transform.InverseTransformDirection(lvlCamToLight);
-		Vector3 transformedLvlLightDir = levelCam.transform.InverseTransformDirection(lvlLightDir);
-		Vector3 retransformedCamToLight = gameplayCam.transform.TransformDirection(transformedLvlCamtoLight);
-		Vector3 retransformedLightDir = gameplayCam.transform.TransformDirection(transformedLvlLightDir);
-		gameplayLight.transform.position = gameplayCam.transform.position + retransformedCamToLight;
-		gameplayLight.transform.forward = retransformedLightDir;
+		gameplayLight.transform.position = TransformPointFromLevelToPlayArea(levelLight.transform.position);
+		gameplayLight.transform.forward = TransformDirectionFromLevelToPlayArea(levelLight.transform.forward);
+
+		Vector3 obstacleFwd = TransformDirectionFromLevelToPlayArea(Vector3.forward);
+		Vector3 obstacleUp = TransformDirectionFromLevelToPlayArea(Vector3.up);
+		worldObstacleContainer.transform.position = TransformPointFromLevelToPlayArea(Vector3.zero);
+		worldObstacleContainer.transform.rotation = Quaternion.LookRotation(obstacleFwd, obstacleUp);
+	}
+
+	public Vector3 TransformPointFromLevelToPlayArea(Vector3 position){
+		Vector3 levelCamLocalPoint = levelCam.transform.InverseTransformPoint(position);
+		return gameplayCam.transform.TransformPoint(levelCamLocalPoint);
+	}
+
+	public Vector3 TransformDirectionFromLevelToPlayArea(Vector3 direction){
+		Vector3 levelCamLocalDirection = levelCam.transform.InverseTransformDirection(direction);
+		return gameplayCam.transform.TransformDirection(levelCamLocalDirection);
+	}
+
+	//TODO untested but should work
+	public Vector3 TransformPointFromPlayAreaToLevel(Vector3 position){
+		Vector3 gameplayCamLocalPoint = gameplayCam.transform.InverseTransformPoint(position);
+		return levelCam.transform.TransformPoint(gameplayCamLocalPoint);
+	}
+
+	//TODO untested but should work
+	public Vector3 TransformDirectionFromPlayAreaToLevel(Vector3 direction){
+		Vector3 gameplayCamLocalDirection = gameplayCam.transform.InverseTransformDirection(direction);
+		return levelCam.transform.TransformDirection(gameplayCamLocalDirection);
 	}
 
 	public void SetMode(GameplayMode newMode){

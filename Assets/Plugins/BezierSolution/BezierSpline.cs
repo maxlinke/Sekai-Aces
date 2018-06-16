@@ -251,7 +251,7 @@ namespace BezierSolution
 
 			Vector3 startUp = startPoint.transform.rotation * Vector3.up;
 			Vector3 endUp = endPoint.transform.rotation * Vector3.up;
-			Vector3 lerpedUp = Vector3.Slerp(startUp, endUp, localT).normalized;	//TODO slerp, lerp, whatever
+			Vector3 lerpedUp = Vector3.Slerp(startUp, endUp, localT).normalized;
 
 			return Quaternion.LookRotation(forward, lerpedUp);
 		}
