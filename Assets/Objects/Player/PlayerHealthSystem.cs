@@ -108,7 +108,8 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 
 	void OnCollisionEnter(Collision collision){
 		if(collision.collider.gameObject.layer == LayerMask.NameToLayer("Obstacle")){
-			Kill(true);
+			lastDamageWasCollision = true;
+			Damage(hitPoints);
 			Debug.Log("obstacle collision");
 		}
 	}

@@ -23,12 +23,15 @@ public abstract class IntroSequence : MonoBehaviour {
 			if(Input.anyKey){
 				if(!anyKeyDownLastFrame){
 					skipTime = Time.time + skipDelay;
+					//TODO show the skip-message on the ui AND update the timer shown
 				}
 				if(Time.time > skipTime){
 					Debug.Log("skip");
 					AbortIntroSequence();
 					gameController.ResetLevel();
 				}
+			}else{
+				//TODO hide the skip message
 			}
 			anyKeyDownLastFrame = Input.anyKey;
 		}

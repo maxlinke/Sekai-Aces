@@ -54,19 +54,20 @@ public class ParticleEffectPool : ObjectPool {
 		}
 	}
 
-	public void NewEffect(Vector3 position, Vector3 direction){
+	public void NewEffect(Vector3 position, Vector3 direction, bool onPlayArea, int layer){
 		PooledParticleEffect effect;
 		if(!TryTakeEffectFromInactivePool(out effect)){
 			effectCount++;
 			GameObject effectObject = Instantiate(effectPrefab) as GameObject;
-			effectObject.transform.parent = this.transform;
 			effectObject.name = "effect " + effectCount;
 			effect = effectObject.GetComponent<PooledParticleEffect>();
 			effect.pool = this;
 		}
 		effect.gameObject.SetActive(true);
+		effect.gameObject.transform.parent = (onPlayArea ? this.transform : null);
 		effect.transform.position = position;
 		effect.transform.localRotation = Quaternion.LookRotation(direction);
+		effect.SetLayerIncludingAllChildren(effect.gameObject, layer);
 		activeEffects.Add(effect);
 	}
 

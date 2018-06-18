@@ -92,6 +92,7 @@ public class PlayerMovementSystem : MonoBehaviour {
 		rb.useGravity = false;
 		rb.velocity = Vector3.zero;
 		rb.interpolation = RigidbodyInterpolation.Interpolate;
+		transform.rotation = Quaternion.identity;
 		UpdateRBConstraints();
 		canDodge = true;
 		isDodging = false;

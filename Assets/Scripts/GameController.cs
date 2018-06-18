@@ -14,6 +14,7 @@ public class GameController : MonoBehaviour {
 
 		[Header("Scene References")]
 	[SerializeField] PlayArea playArea;
+	[SerializeField] LevelTrackFollower levelTrackFollower;
 	[SerializeField] IngameGUI gui;
 	[SerializeField] PauseMenu pauseMenu;
 	[SerializeField] CameraShakeModule cameraShakeModule;
@@ -29,7 +30,7 @@ public class GameController : MonoBehaviour {
 	[SerializeField] float gameoverTimeFadeDuration;
 
 		[Header("Level Settings")]
-	[SerializeField] GameplayMode initialMode;	//TODO respawn points for the different things... fuck... OR just say screw it and do the best with the existing ones (flatten x when in side mode)
+	[SerializeField] GameplayMode initialMode;
 
 	GameDifficulty.DifficultyLevel difficulty;
 	List<ObjectPool> objectPools;
@@ -46,7 +47,6 @@ public class GameController : MonoBehaviour {
 		LoadDifficulty();
 		LoadPools();
 		LoadPlayers();
-		//TODO wait for intro animation and stuff... how do i deal with that? control it from here?
 		introSequence.StartIntroSequence();
 	}
 
@@ -276,7 +276,7 @@ public class GameController : MonoBehaviour {
 		playerObject.name = "Player " + playerNumber + " (" + plane.ToString() + ", " + input.ToString() + ")";
 		player = playerObject.GetComponent<Player>();
 		player.Initialize(input, plane);
-		player.SetFurtherInitData(playerNumber, this, gui.ActivateAndGetPlayerGUI(playerNumber));
+		player.SetFurtherInitData(playerNumber, this, gui.ActivateAndGetPlayerGUI(playerNumber), playArea, levelTrackFollower);
 		player.transform.parent = playArea.transform;
 	}
 

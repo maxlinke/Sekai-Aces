@@ -37,4 +37,12 @@ public class PooledParticleEffect : MonoBehaviour {
 		mainParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 	}
 
+	public void SetLayerIncludingAllChildren(GameObject obj, int layer){
+		obj.layer = layer;
+		for(int i=0; i<obj.transform.childCount; i++){
+			GameObject child = obj.transform.GetChild(i).gameObject;
+			SetLayerIncludingAllChildren(child, layer);
+		}
+	}
+
 }

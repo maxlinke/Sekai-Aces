@@ -13,9 +13,11 @@ public class Player : MonoBehaviour {
 
 		[Header("Components")]
 	[SerializeField] Collider hitbox;
+	[SerializeField] Rigidbody rb;
 	[SerializeField] PlayerMovementSystem playerMovementSystem;
 	[SerializeField] PlayerWeaponSystem playerWeaponSystem;
 	[SerializeField] PlayerHealthSystem playerHealthSystem;
+	[SerializeField] PlayerDeathSystem playerDeathSystem;
 
 		[Header("Plane Prefabs")]
 	[SerializeField] GameObject spectrePlanePrefab;
@@ -44,16 +46,14 @@ public class Player : MonoBehaviour {
 	PlayerInput playerInput;
 	PlaneType planeType;
 
-	ParticleEffectPool fireballPool;
-
 	void Start(){
-		fireballPool = ParticleEffectPool.GetFireballPoolMedium();
+		
 	}
 
 	void Update(){
 		if(Time.timeScale > 0f){
 			if(Input.GetKeyDown(KeyCode.F) && PlayerNumber == 1){
-				playerHealthSystem.WeaponDamage(0);
+				playerHealthSystem.WeaponDamage(1);
 			}
 			if(Input.GetKeyDown(KeyCode.G) && PlayerNumber == 1){
 				playerHealthSystem.WeaponDamage(999);
@@ -95,6 +95,7 @@ public class Player : MonoBehaviour {
 		playerMovementSystem.playerModel = playerModel;
 		playerWeaponSystem.playerModel = playerModel;
 		playerHealthSystem.playerModel = playerModel;
+		playerDeathSystem.playerModel = playerModel;
 		PlayerSpecialWeapon playerSPW = SPWObject.GetComponent<PlayerSpecialWeapon>();
 		playerWeaponSystem.specialWeapon = playerSPW;
 	}
@@ -114,13 +115,15 @@ public class Player : MonoBehaviour {
 		ResetAllComponents();
 	}
 
-	public void SetFurtherInitData(int playerNumber, GameController gameController, PlayerGUI gui){
+	public void SetFurtherInitData(int playerNumber, GameController gameController, PlayerGUI gui, PlayArea playArea, LevelTrackFollower levelTrackFollower){
 		this._playerNumber = playerNumber;
 		this.gameController = gameController;
 		this.gui = gui;
 		playerMovementSystem.gui = gui;
 		playerWeaponSystem.gui = gui;
 		gui.Initialize(planeType);
+		playerDeathSystem.playArea = playArea;
+		playerDeathSystem.levelTrackFollower = levelTrackFollower;
 	}
 
 	public void SetRegularComponentsActive(bool value){
@@ -130,6 +133,7 @@ public class Player : MonoBehaviour {
 	}
 
 	public void InitiateRespawn(){
+		if(!playerDeathSystem.IsExploded()) playerDeathSystem.Explode();
 		ResetAllComponents();
 		SetRegularComponentsActive(false);
 		playerModel.SetBlinking(true);
@@ -161,9 +165,12 @@ public class Player : MonoBehaviour {
 		gui.SetDodgeDisplayState(false);
 		gui.SetSPWDisplayState(false);
 
-		playerModel.Hide();
-		hitbox.enabled = false;
-		fireballPool.NewEffect(transform.position, transform.forward);
+		if(explode){
+			playerDeathSystem.Explode();
+		}else{
+			playerDeathSystem.InitiateCrash();
+		}
+
 		//TODO if explode, explode
 		//else transfer to background layer (and wait for collision?)
 		//OR always explode on background layer, debris flies forward with speed of foreground
@@ -180,9 +187,10 @@ public class Player : MonoBehaviour {
 		playerMovementSystem.RespawnReset();
 		playerWeaponSystem.RespawnReset();
 		playerHealthSystem.RespawnReset();
+		playerDeathSystem.RespawnReset();
 	}
 
-	void SetLayerIncludingAllChildren(GameObject obj, int layer){
+	public void SetLayerIncludingAllChildren(GameObject obj, int layer){
 		obj.layer = layer;
 		for(int i=0; i<obj.transform.childCount; i++){
 			GameObject child = obj.transform.GetChild(i).gameObject;
