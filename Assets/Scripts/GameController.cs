@@ -126,6 +126,7 @@ public class GameController : MonoBehaviour {
 
 	public void TransitionToGameplayMode(GameplayMode newMode){
 		//TODO disable enemy spawns NO!!!! enemy spawn disable via trigger on track, enemy spawn reenable via trigger on track. all via triggers on track
+		//TODO enemyspawner.setmode or something so that the enemy spawner also knows in what plane to spawn enemies and in what direction they can shoot
 		StartCoroutine(WaitForRightConditionsAndTransition(newMode));
 	}
 

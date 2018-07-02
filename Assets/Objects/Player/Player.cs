@@ -198,6 +198,10 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	public Vector3 GetVelocity(){
+		return rb.velocity;
+	}
+
 	GameObject InstantiatePrefabAsChild(GameObject prefab){
 		GameObject instantiated = Instantiate(prefab, Vector3.zero, Quaternion.identity, this.transform) as GameObject;
 		instantiated.transform.localPosition = Vector3.zero;

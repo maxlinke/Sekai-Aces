@@ -6,7 +6,10 @@ public class SimpleBulletPool : ObjectPool {
 
 	static SimpleBulletPool friendlyNormalPoolInstance;
 	static SimpleBulletPool friendlyFastPoolInstance;
+
+	static SimpleBulletPool enemySlowPoolInstance;
 	static SimpleBulletPool enemyNormalPoolInstance;
+	static SimpleBulletPool enemyFastPoolInstance;
 
 	[SerializeField] BulletPoolType type;
 
@@ -27,10 +30,12 @@ public class SimpleBulletPool : ObjectPool {
 	List<Rigidbody> returningBullets;
 
 	enum BulletPoolType{
-		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_SLOW
+		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_SLOW, ENEMY_NORMAL, ENEMY_FAST
 	}
 
-	void Start(){
+	public float BulletSpeed{get{return bulletSpeed;}}
+
+	void Awake(){
 		bulletCount = 0;
 		sqrBulletRange = bulletRange * bulletRange;
 		CheckAndSetInstance();
@@ -80,7 +85,7 @@ public class SimpleBulletPool : ObjectPool {
 		}
 		bullet.gameObject.SetActive(true);
 		bullet.transform.position = position;
-		bullet.transform.localRotation = Quaternion.identity;
+		bullet.transform.localRotation = Quaternion.LookRotation(direction);
 		bullet.velocity = direction * bulletSpeed;
 		activeBullets.Add(bullet);
 	}
@@ -114,23 +119,39 @@ public class SimpleBulletPool : ObjectPool {
 		return friendlyFastPoolInstance;
 	}
 
+	public static SimpleBulletPool GetEnemySlowPoolInstance(){
+		return enemySlowPoolInstance;
+	}
+
 	public static SimpleBulletPool GetEnemyNormalPoolInstance(){
 		return enemyNormalPoolInstance;
+	}
+
+	public static SimpleBulletPool GetEnemyFastPoolInstance(){
+		return enemyFastPoolInstance;
 	}
 
 	void CheckAndSetInstance(){
 		switch(type){
 		case BulletPoolType.FRIENDLY_NORMAL: 
-			if(friendlyNormalPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
+			if(friendlyNormalPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
 			else friendlyNormalPoolInstance = this;
 			break;
 		case BulletPoolType.FRIENDLY_FAST:
-			if(friendlyFastPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
+			if(friendlyFastPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
 			else friendlyFastPoolInstance = this;
 			break;
 		case BulletPoolType.ENEMY_SLOW:
-			if(enemyNormalPoolInstance != null) throw new UnityException("normal bulletpool instance is not null (singleton...)");
+			if(enemySlowPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
+			else enemySlowPoolInstance = this;
+			break;
+		case BulletPoolType.ENEMY_NORMAL:
+			if(enemyNormalPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
 			else enemyNormalPoolInstance = this;
+			break;
+		case BulletPoolType.ENEMY_FAST:
+			if(enemyFastPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
+			else enemyFastPoolInstance = this;
 			break;
 		default:
 			throw new UnityException("unknown bullet pool type \"" + type.ToString() + "\"");
