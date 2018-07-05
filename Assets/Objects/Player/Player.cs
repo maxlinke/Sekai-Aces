@@ -115,7 +115,7 @@ public class Player : MonoBehaviour {
 		ResetAllComponents();
 	}
 
-	public void SetFurtherInitData(int playerNumber, GameController gameController, PlayerGUI gui, PlayArea playArea, LevelTrackFollower levelTrackFollower){
+	public void SetFurtherInitData(int playerNumber, GameController gameController, PlayerGUI gui, PlayArea playArea, TrackFollower levelTrackFollower){
 		this._playerNumber = playerNumber;
 		this.gameController = gameController;
 		this.gui = gui;

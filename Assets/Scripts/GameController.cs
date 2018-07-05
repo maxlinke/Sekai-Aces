@@ -14,11 +14,12 @@ public class GameController : MonoBehaviour {
 
 		[Header("Scene References")]
 	[SerializeField] PlayArea playArea;
-	[SerializeField] LevelTrackFollower levelTrackFollower;
+	[SerializeField] TrackFollower levelTrackFollower;
 	[SerializeField] IngameGUI gui;
 	[SerializeField] PauseMenu pauseMenu;
 	[SerializeField] CameraShakeModule cameraShakeModule;
 	[SerializeField] IntroSequence introSequence;
+	[SerializeField] EnemySpawner enemySpawner;
 
 		[Header("Game Settings")]
 	[SerializeField] float levelResetPlayerControlDelay;
@@ -47,6 +48,8 @@ public class GameController : MonoBehaviour {
 		LoadDifficulty();
 		LoadPools();
 		LoadPlayers();
+		gui.gameObject.SetActive(false);
+		pauseMenu.gameObject.SetActive(false);
 		introSequence.StartIntroSequence();
 	}
 
@@ -54,10 +57,6 @@ public class GameController : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.Alpha1)) TransitionToGameplayMode(GameplayMode.TOPDOWN);
 		if(Input.GetKeyDown(KeyCode.Alpha2)) TransitionToGameplayMode(GameplayMode.SIDE);
 		if(Input.GetKeyDown(KeyCode.Alpha3)) TransitionToGameplayMode(GameplayMode.BACK);
-//		if(Input.GetKeyDown(KeyCode.Keypad1)) Time.timeScale = 1f;
-//		if(Input.GetKeyDown(KeyCode.Keypad2)) Time.timeScale = 0.1f;
-//		if(Input.GetKeyDown(KeyCode.R)) ResetLevel();
-//		if(Input.GetKeyDown(KeyCode.R)) RenderSettings.ambientLight = Random.ColorHSV();
 	}
 
 	public void ResetLevel(){
@@ -72,12 +71,18 @@ public class GameController : MonoBehaviour {
 		playArea.SetAreaToMode(initialMode);
 		playArea.SetMode(initialMode);
 
+		levelTrackFollower.LevelReset();
+
+		enemySpawner.LevelReset();
+		enemySpawner.SetMode(initialMode);
+
 		foreach(ObjectPool pool in objectPools){
 			pool.ResetPool();
 		}
 
 		for(int i=0; i<players.Length; i++){
 			Player player = players[i];
+			player.gameObject.SetActive(true);
 			player.LevelResetInit(playerMaxLives);
 			player.Mode = initialMode;
 			player.transform.parent = playArea.transform;
@@ -91,9 +96,6 @@ public class GameController : MonoBehaviour {
 			StartCoroutine(WaitAndEnablePlayerControl(player, levelResetPlayerControlDelay));
 		}
 
-		//TODO reset all enemy stuff
-		//reset the position of the foreground on the spline (reset the foreground script ?)
-		//dont, i repeat DO NOT restart the music. that shit loops...
 	}
 
 	public void TogglePause(){
@@ -125,8 +127,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void TransitionToGameplayMode(GameplayMode newMode){
-		//TODO disable enemy spawns NO!!!! enemy spawn disable via trigger on track, enemy spawn reenable via trigger on track. all via triggers on track
-		//TODO enemyspawner.setmode or something so that the enemy spawner also knows in what plane to spawn enemies and in what direction they can shoot
+		enemySpawner.SetMode(newMode);
 		StartCoroutine(WaitForRightConditionsAndTransition(newMode));
 	}
 
@@ -228,9 +229,8 @@ public class GameController : MonoBehaviour {
 		foreach(GameObject poolPrefab in objectPoolPrefabs){
 			GameObject poolObject = InstantiateToPlayAreaAndGetObject(poolPrefab);
 			ObjectPool pool = poolObject.GetComponent<ObjectPool>();
-			if(pool != null){
-				objectPools.Add(pool);
-			}
+			pool.Initialize();
+			objectPools.Add(pool);
 		}
 	}
 
@@ -262,8 +262,9 @@ public class GameController : MonoBehaviour {
 		for(int i=0; i<players.Length; i++){
 			int playerNumber = i+1;
 			InstantiateAndInitializePlayer(playerNumber, out players[i]);
-			players[i].enabled = false;
-			players[i].SetRegularComponentsActive(false);
+//			players[i].enabled = false;
+//			players[i].SetRegularComponentsActive(false);
+			players[i].gameObject.SetActive(false);
 		}
 	}
 

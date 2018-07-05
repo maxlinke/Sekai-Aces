@@ -4,6 +4,8 @@ using UnityEngine;
 
 public abstract class ObjectPool : MonoBehaviour {
 
+	public abstract void Initialize();
+
 	public abstract void ResetPool();
 
 }

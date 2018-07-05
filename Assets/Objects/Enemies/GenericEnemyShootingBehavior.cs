@@ -11,7 +11,6 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 	[SerializeField] FiringDirection firingDirection;
 
 	[SerializeField] GameObject[] bulletOrigins;
-	[SerializeField] float timeBetweenFiringActions;
 
 	[SerializeField] int numberOfBurstShots;
 	[SerializeField] float burstDuration;
@@ -22,7 +21,6 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 	Vector3 bulletDirectionScale;
 
 	SimpleBulletPool bulletPool;
-	float nextFiringAction;
 
 	Player[] players;
 

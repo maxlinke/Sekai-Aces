@@ -32,16 +32,16 @@ public class PlayArea : MonoBehaviour {
 
 	GameplayMode currentMode;
 
+	public Vector3 topAreaDimensions { get { return topArea.transform.localScale; } }
+	public Vector3 sideAreaDimensions { get { return sideArea.transform.localScale; } }
+	public Vector3 backAreaDimensions { get { return backArea.transform.localScale; } }
+
 	/*
 		ABSOLUTELY NO STARTCOROUTINE CALLS IN HERE; THEY ARE ALL TO BE MADE BY THE GAMECONTROLLER!!!
 	*/
 
 	void Start () {
 		levelCam.fieldOfView = gameplayCam.fieldOfView;
-	}
-	
-	void Update () {
-		
 	}
 
 	void LateUpdate(){
@@ -64,13 +64,11 @@ public class PlayArea : MonoBehaviour {
 		return gameplayCam.transform.TransformDirection(levelCamLocalDirection);
 	}
 
-	//TODO untested but should work
 	public Vector3 TransformPointFromPlayAreaToLevel(Vector3 position){
 		Vector3 gameplayCamLocalPoint = gameplayCam.transform.InverseTransformPoint(position);
 		return levelCam.transform.TransformPoint(gameplayCamLocalPoint);
 	}
 
-	//TODO untested but should work
 	public Vector3 TransformDirectionFromPlayAreaToLevel(Vector3 direction){
 		Vector3 gameplayCamLocalDirection = gameplayCam.transform.InverseTransformDirection(direction);
 		return levelCam.transform.TransformDirection(gameplayCamLocalDirection);

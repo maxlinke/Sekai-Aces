@@ -5,11 +5,11 @@ using UnityEngine;
 public class ParticleEffectPool : ObjectPool {
 
 	static ParticleEffectPool fireballPoolMediumInstance;
+	static ParticleEffectPool fireballPoolSmallInstance;
 
 	[SerializeField] EffectType type;
 	[SerializeField] GameObject effectPrefab;
 
-	bool initialized;
 	int effectCount;
 
 	List<PooledParticleEffect> activeEffects;
@@ -17,33 +17,27 @@ public class ParticleEffectPool : ObjectPool {
 	List<PooledParticleEffect> returningEffects;
 
 	enum EffectType{
+		FIREBALL_SMALL,
 		FIREBALL_MEDIUM
 	}
 
-	void Start () {
+	public override void Initialize () {
 		effectCount = 0;
 		CheckAndSetInstance();
 		activeEffects = new List<PooledParticleEffect>();
 		inactiveEffects = new List<PooledParticleEffect>();
 		returningEffects = new List<PooledParticleEffect>();
-		initialized = true;
-	}
-	
-	void Update () {
-		
 	}
 
 	public override void ResetPool () {
-		if(initialized){
-			foreach(PooledParticleEffect effect in activeEffects){
-				effect.Deactivate();
-				returningEffects.Add(effect);
-			}
-			foreach(PooledParticleEffect effect in returningEffects){
-				ReturnToInactivePool(effect);
-			}
-			returningEffects.Clear();
+		foreach(PooledParticleEffect effect in activeEffects){
+			effect.Deactivate();
+			returningEffects.Add(effect);
 		}
+		foreach(PooledParticleEffect effect in returningEffects){
+			ReturnToInactivePool(effect);
+		}
+		returningEffects.Clear();
 	}
 
 	public void ReturnToInactivePool(PooledParticleEffect effect){
@@ -84,14 +78,22 @@ public class ParticleEffectPool : ObjectPool {
 		}
 	}
 
+	public static ParticleEffectPool GetFireballPoolSmall(){
+		return fireballPoolSmallInstance;
+	}
+
 	public static ParticleEffectPool GetFireballPoolMedium(){
 		return fireballPoolMediumInstance;
 	}
 
 	void CheckAndSetInstance(){
 		switch(type){
+		case EffectType.FIREBALL_SMALL:
+			if(fireballPoolSmallInstance != null) throw new UnityException("Small Fireball Pool instance is not null (Singleton violation)");
+			else fireballPoolSmallInstance = this;
+			break;
 		case EffectType.FIREBALL_MEDIUM:
-			if(fireballPoolMediumInstance != null) throw new UnityException("Medium Explosion Pool Instance is not null (Singleton violation)");
+			if(fireballPoolMediumInstance != null) throw new UnityException("Medium Fireball Pool Instance is not null (Singleton violation)");
 			else fireballPoolMediumInstance = this;
 			break;
 		default:

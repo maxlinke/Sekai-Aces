@@ -10,7 +10,7 @@ public class PlayerDeathSystem : MonoBehaviour {
 	[SerializeField] Collider hitbox;
 
 	[HideInInspector] public PlayArea playArea;
-	[HideInInspector] public LevelTrackFollower levelTrackFollower;
+	[HideInInspector] public TrackFollower levelTrackFollower;
 	[HideInInspector] public PlayerModel playerModel;
 
 	ParticleEffectPool fireballPool;
@@ -60,9 +60,10 @@ public class PlayerDeathSystem : MonoBehaviour {
 		Vector3 newForward = playArea.TransformDirectionFromPlayAreaToLevel(transform.forward);
 		Vector3 newUp = playArea.TransformDirectionFromPlayAreaToLevel(transform.up);
 		transform.rotation = Quaternion.LookRotation(newForward, newUp);
-		rb.velocity = levelTrackFollower.GetVelocity();
 		rb.useGravity = true;
 		rb.constraints = RigidbodyConstraints.None;
+		rb.velocity = levelTrackFollower.GetVelocity();
+		rb.AddRelativeTorque(Vector3.forward * Mathf.Sign(Random.value - 0.5f) * 100f, ForceMode.Acceleration);
 	}
 
 	public bool IsExploded(){
