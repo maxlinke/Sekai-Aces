@@ -21,7 +21,6 @@ public class SimpleBulletPool : ObjectPool {
 	[SerializeField] int bulletDamage;
 	[SerializeField] float bulletRange;
 
-	bool initialized;
 	float sqrBulletRange;
 	int bulletCount;
 
@@ -34,16 +33,6 @@ public class SimpleBulletPool : ObjectPool {
 	}
 
 	public float BulletSpeed{get{return bulletSpeed;}}
-
-	void Awake(){
-		bulletCount = 0;
-		sqrBulletRange = bulletRange * bulletRange;
-		CheckAndSetInstance();
-		inactiveBullets = new List<Rigidbody>();
-		activeBullets = new List<Rigidbody>();
-		returningBullets = new List<Rigidbody>();
-		initialized = true;
-	}
 	
 	void Update(){
 		for(int i=0; i<activeBullets.Count; i++){
@@ -57,17 +46,21 @@ public class SimpleBulletPool : ObjectPool {
 		returningBullets.Clear();
 	}
 
-	public override void ResetPool (){
-		if(initialized){
-//			for(int i=0; i<activeBullets.Count; i++){
-//				returningBullets.Add(activeBullets[i]);
-//			}
-			returningBullets.AddRange(activeBullets);
-			for(int i=0; i<returningBullets.Count; i++){
-				ReturnToInactivePool(returningBullets[i]);
-			}
-			returningBullets.Clear();
+	public override void Initialize () {
+		bulletCount = 0;
+		sqrBulletRange = bulletRange * bulletRange;
+		CheckAndSetInstance();
+		inactiveBullets = new List<Rigidbody>();
+		activeBullets = new List<Rigidbody>();
+		returningBullets = new List<Rigidbody>();
+	}
+
+	public override void ResetPool () {
+		returningBullets.AddRange(activeBullets);
+		for(int i=0; i<returningBullets.Count; i++){
+			ReturnToInactivePool(returningBullets[i]);
 		}
+		returningBullets.Clear();
 	}
 
 	public void NewBullet(Vector3 position, Vector3 direction){
