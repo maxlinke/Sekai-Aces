@@ -46,11 +46,11 @@ public class Player : MonoBehaviour {
 	PlayerInput playerInput;
 	PlaneType planeType;
 
-	void Start(){
+	void Start () {
 		
 	}
 
-	void Update(){
+	void Update () {
 		if(Time.timeScale > 0f){
 			if(Input.GetKeyDown(KeyCode.F) && PlayerNumber == 1){
 				playerHealthSystem.WeaponDamage(1);
@@ -61,6 +61,23 @@ public class Player : MonoBehaviour {
 		}
 		if(playerInput.GetPauseInputDown()){
 			gameController.TogglePause();
+		}
+	}
+
+	void OnCollisionEnter (Collision collision) {
+		if(collision.gameObject.layer == LayerMask.NameToLayer("Obstacle")){
+			playerHealthSystem.ObstacleCollision();
+		}
+		IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
+		if(damageable != null){
+			playerWeaponSystem.DealCollisionDamage(damageable);
+		}
+	}
+
+	void OnTriggerStay (Collider otherCollider) {
+		if(otherCollider.gameObject.layer == LayerMask.NameToLayer("PowerUp")){
+			PowerUp powerUp = otherCollider.GetComponent<PowerUp>();
+			DealWithPowerup(powerUp);
 		}
 	}
 
@@ -179,6 +196,32 @@ public class Player : MonoBehaviour {
 			gameController.RequestRespawn(this);
 		}else{
 			gameController.NotifyGameover(this);
+		}
+	}
+
+	void DealWithPowerup(PowerUp powerUp){
+		PowerUp.PowerUpType powerUpType = powerUp.Type;
+		switch(powerUpType){
+		case PowerUp.PowerUpType.WEAPON:
+			if(playerWeaponSystem.WeaponCanBeUpgraded()){
+				playerWeaponSystem.UpgradeWeapon();
+				powerUp.ReturnToPool();
+			}
+			break;
+		case PowerUp.PowerUpType.RELOAD:
+			if(playerWeaponSystem.SpecialWeaponCanBeReloaded()){
+				playerWeaponSystem.ReloadSpecialWeapon();
+				powerUp.ReturnToPool();
+			}
+			break;
+		case PowerUp.PowerUpType.REPAIR:
+			if(playerHealthSystem.CanBeHealed()){
+				playerHealthSystem.Heal();
+				powerUp.ReturnToPool();
+			}
+			break;
+		default:
+			throw new UnityException("Unknown PowerUp-Type \"" + powerUpType.ToString() + "\"");
 		}
 	}
 

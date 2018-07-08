@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleBulletPool : ObjectPool {
+public class SimpleBulletPool : RigidbodyPool {
 
 	static SimpleBulletPool friendlyNormalPoolInstance;
 	static SimpleBulletPool friendlyFastPoolInstance;
@@ -19,54 +19,29 @@ public class SimpleBulletPool : ObjectPool {
 		[Header("Settings")]
 	[SerializeField] float bulletSpeed;
 	[SerializeField] int bulletDamage;
-	[SerializeField] float bulletRange;
 
-	float sqrBulletRange;
 	int bulletCount;
 
-	List<Rigidbody> activeBullets;
-	List<Rigidbody> inactiveBullets;
-	List<Rigidbody> returningBullets;
-
-	enum BulletPoolType{
+	enum BulletPoolType {
 		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_SLOW, ENEMY_NORMAL, ENEMY_FAST
 	}
 
-	public float BulletSpeed{get{return bulletSpeed;}}
+	public float BulletSpeed { get { return bulletSpeed; } }
 	
-	void Update(){
-		for(int i=0; i<activeBullets.Count; i++){
-			if(activeBullets[i].transform.localPosition.sqrMagnitude > sqrBulletRange){
-				returningBullets.Add(activeBullets[i]);
-			}
-		}
-		for(int i=0; i<returningBullets.Count; i++){
-			ReturnToInactivePool(returningBullets[i]);
-		}
-		returningBullets.Clear();
+	void Update () {
+		base.SqrDistReturnCheck();
 	}
 
 	public override void Initialize () {
+		base.Initialize();
 		bulletCount = 0;
-		sqrBulletRange = bulletRange * bulletRange;
 		CheckAndSetInstance();
-		inactiveBullets = new List<Rigidbody>();
-		activeBullets = new List<Rigidbody>();
-		returningBullets = new List<Rigidbody>();
 	}
 
-	public override void ResetPool () {
-		returningBullets.AddRange(activeBullets);
-		for(int i=0; i<returningBullets.Count; i++){
-			ReturnToInactivePool(returningBullets[i]);
-		}
-		returningBullets.Clear();
-	}
-
-	public void NewBullet(Vector3 position, Vector3 direction){
+	public void NewBullet (Vector3 position, Vector3 direction) {
 		direction = direction.normalized;
 		Rigidbody bullet;
-		if(!TryTakeBulletFromInactivePool(out bullet)){
+		if(!TryTakeRBFromInactivePool(out bullet)){
 			bulletCount++;
 			GameObject bulletObject = Instantiate(bulletPrefab) as GameObject;
 			bulletObject.transform.parent = this.transform;
@@ -80,51 +55,30 @@ public class SimpleBulletPool : ObjectPool {
 		bullet.transform.position = position;
 		bullet.transform.localRotation = Quaternion.LookRotation(direction);
 		bullet.velocity = direction * bulletSpeed;
-		activeBullets.Add(bullet);
+		activeRBs.Add(bullet);
 	}
 
-	bool TryTakeBulletFromInactivePool(out Rigidbody bullet){
-		int count = inactiveBullets.Count;
-		if(count > 0){
-			int index = count - 1;
-			bullet = inactiveBullets[index];
-			inactiveBullets.RemoveAt(index);
-			return true;
-		}else{
-			bullet = null;
-			return false;
-		}
-	}
-
-	public void ReturnToInactivePool(Rigidbody bullet){
-		if(bullet.gameObject.activeSelf){
-			bullet.gameObject.SetActive(false);
-			activeBullets.Remove(bullet);
-			inactiveBullets.Add(bullet);
-		}
-	}
-
-	public static SimpleBulletPool GetFriendlyNormalPoolInstance(){
+	public static SimpleBulletPool GetFriendlyNormalPoolInstance () {
 		return friendlyNormalPoolInstance;
 	}
 
-	public static SimpleBulletPool GetFriendlyFastPoolInstance(){
+	public static SimpleBulletPool GetFriendlyFastPoolInstance () {
 		return friendlyFastPoolInstance;
 	}
 
-	public static SimpleBulletPool GetEnemySlowPoolInstance(){
+	public static SimpleBulletPool GetEnemySlowPoolInstance () {
 		return enemySlowPoolInstance;
 	}
 
-	public static SimpleBulletPool GetEnemyNormalPoolInstance(){
+	public static SimpleBulletPool GetEnemyNormalPoolInstance () {
 		return enemyNormalPoolInstance;
 	}
 
-	public static SimpleBulletPool GetEnemyFastPoolInstance(){
+	public static SimpleBulletPool GetEnemyFastPoolInstance () {
 		return enemyFastPoolInstance;
 	}
 
-	void CheckAndSetInstance(){
+	void CheckAndSetInstance () {
 		switch(type){
 		case BulletPoolType.FRIENDLY_NORMAL: 
 			if(friendlyNormalPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");

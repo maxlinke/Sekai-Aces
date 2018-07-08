@@ -61,6 +61,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 	public void Heal(){
 		hitPoints = maxHitPoints;
 		smokeParticleSystem.Stop();
+		playerModel.Shine(Color.green);
 		//TODO repair sound
 	}
 
@@ -93,6 +94,12 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		}
 	}
 
+	public void ObstacleCollision () {
+		lastDamageWasCollision = true;
+		Damage(hitPoints);
+		Debug.Log(this.gameObject.name + " : obstacle collision");
+	}
+
 	void Damage(int amount){
 		hitPoints -= amount;
 		CameraShakeModule.Shake(hitShakeStrength, hitShakeDuration, hitShakeSpeed);
@@ -103,14 +110,6 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		if(hitPoints > 0){
 			SetInvulnerableForSeconds(invulnerabilityTimeAfterHit);
 			playerModel.SetBlinking(true);
-		}
-	}
-
-	void OnCollisionEnter(Collision collision){
-		if(collision.collider.gameObject.layer == LayerMask.NameToLayer("Obstacle")){
-			lastDamageWasCollision = true;
-			Damage(hitPoints);
-			Debug.Log("obstacle collision");
 		}
 	}
 

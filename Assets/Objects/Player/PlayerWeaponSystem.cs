@@ -8,6 +8,7 @@ public class PlayerWeaponSystem : MonoBehaviour {
 	[SerializeField] float normalFireRate;
 	[SerializeField] float increasedFireRate;
 	[SerializeField] float weaponSpread;
+	[SerializeField] int collisionDamage;
 
 	[HideInInspector] public PlayerInput playerInput;
 	[HideInInspector] public PlayerModel playerModel;
@@ -75,7 +76,7 @@ public class PlayerWeaponSystem : MonoBehaviour {
 		}
 	}
 
-	public void RespawnReset(){
+	public void RespawnReset () {
 		specialWeapon.Reset();
 		nextShot = Mathf.NegativeInfinity;
 		useFastBullets = false;
@@ -84,17 +85,31 @@ public class PlayerWeaponSystem : MonoBehaviour {
 		gui.SetSPWDisplayState(true);
 	}
 
-	public bool SpecialWeaponCanBeReloaded(){
+	public bool WeaponCanBeUpgraded () {
+		return !(useFastBullets && useIncreasedFireRate);
+	}
+
+	public void UpgradeWeapon () {
+		useFastBullets = true;
+		useIncreasedFireRate = true;
+		playerModel.Shine(new Color(1f, 1f, 0f));
+	}
+
+	public bool SpecialWeaponCanBeReloaded () {
 		return specialWeapon.CanBeReloaded();
 	}
 
-	public void ReloadSpecialWeapon(){
+	public void ReloadSpecialWeapon () {
 		specialWeapon.Reload();
-		playerModel.Shine(Color.green);
+		playerModel.Shine(new Color(0.2f, 0.4f, 1f));
 		//TODO reload sound
 	}
 
-	Vector3 GetDirectionScaleVector(){
+	public void DealCollisionDamage (IDamageable damageable) {
+		damageable.CollisionDamage(collisionDamage);
+	}
+
+	Vector3 GetDirectionScaleVector () {
 		switch(mode){
 		case GameplayMode.TOPDOWN:
 			return new Vector3(1,0,1);
@@ -107,7 +122,7 @@ public class PlayerWeaponSystem : MonoBehaviour {
 		}
 	}
 
-	Vector3 GetBulletDirection(){
+	Vector3 GetBulletDirection () {
 		Vector3 randomOffset = Random.insideUnitSphere * weaponSpread;
 		Vector3 flattenedOffset = Vector3.Scale(randomOffset, bulletDirectionScale);
 		return Vector3.forward + flattenedOffset;

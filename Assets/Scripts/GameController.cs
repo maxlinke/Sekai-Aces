@@ -253,8 +253,8 @@ public class GameController : MonoBehaviour {
 		if(playerCount == 1){
 			playerOffsets[0] = 0;
 		}else if(playerCount == 2){
-			playerOffsets[0] = -1;
-			playerOffsets[1] = 1;
+			playerOffsets[0] = 1;
+			playerOffsets[1] = -1;
 		}else{
 			throw new UnityException("unsupported playercount");
 		}
