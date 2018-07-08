@@ -6,6 +6,7 @@
 		_MainTex ("Base (RGB) Gloss (A)", 2D) = "white" {}
 		_BumpMap1 ("Normalmap A", 2D) = "bump" {}
 		_BumpMap2 ("Normalmap B", 2D) = "bump" {}
+		_TexOff ("Texture Offset (multiplied with time)", Vector) = (1,1,-1,-1)
 	}
 	
 	CGINCLUDE
@@ -14,6 +15,7 @@
 	sampler2D _BumpMap2;
 	fixed4 _Color;
 	half _Shininess;
+	float4 _TexOff;
 	
 	struct Input {
 		float2 uv_MainTex;
@@ -27,7 +29,11 @@
 		o.Gloss = tex.a;
 		o.Alpha = tex.a * _Color.a;
 		o.Specular = _Shininess;
-		o.Normal = normalize(UnpackNormal(tex2D(_BumpMap1, IN.uv_BumpMap1)) + UnpackNormal(tex2D(_BumpMap2, IN.uv_BumpMap2)));
+		float2 texOff1 = _TexOff.xy * _Time.y;
+		float2 texOff2 = _TexOff.zw * _Time.y;
+		float3 normal1 = UnpackNormal(tex2D(_BumpMap1, IN.uv_BumpMap1 + texOff1));
+		float3 normal2 = UnpackNormal(tex2D(_BumpMap2, IN.uv_BumpMap2 + texOff2));
+		o.Normal = normalize(normal1 + normal2);
 	}
 	ENDCG
 	
