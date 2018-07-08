@@ -9,14 +9,15 @@ public class TrackTriggerEditor : Editor {
 	public override void OnInspectorGUI () {
 		DrawDefaultInspector();
 		TrackTrigger tt = target as TrackTrigger;
-		if(GUILayout.Button("Apply Position")){
-			tt.ApplyPosition();
-		}
-		if(GUILayout.Button("Snap To Curve")){
-			tt.SnapToCurve();
-		}
-		if(GUILayout.Button("Debug Thing")){
-			tt.DebugThing();
+		if(tt.curve != null){
+			if(GUILayout.Button("Apply Position")){
+				Undo.RecordObject(tt.transform, "Apply Position (TrackTrigger)");
+				tt.ApplyPosition();
+			}
+			if(GUILayout.Button("Snap To Curve")){
+				Undo.RecordObject(tt.transform, "Snap To Curve (TrackTrigger)");
+				tt.SnapToCurve();
+			}
 		}
 	}
 
