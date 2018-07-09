@@ -37,7 +37,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 			invulnerable = false;
 			playerModel.SetBlinking(false);
 		}
-		if((hitPoints <= 0) && (hitPoints < lastHitPoints)){	//TODO this can be moved direclty into damage, right? just move the camerashake code a bit?
+		if((hitPoints <= 0) && (hitPoints < lastHitPoints)){	//TODO this can be moved directly into damage, right? just move the camerashake code a bit?
 			smokeParticleSystem.Stop();
 			playerController.InitiateDeath(lastDamageWasCollision);
 			CameraShakeModule.Shake(deathShakeStrength, deathShakeDuration, deathShakeSpeed);	//this doesn't need to be static..

@@ -16,6 +16,7 @@ public class SimpleBulletPool : RigidbodyPool {
 	[SerializeField] int bulletDamage;
 
 	int bulletCount;
+	ParticleEffectPool effectPool;
 
 	public float BulletSpeed { get { return bulletSpeed; } }
 
@@ -37,8 +38,9 @@ public class SimpleBulletPool : RigidbodyPool {
 
 	public override void Initialize () {
 		base.Initialize();
-		bulletCount = 0;
 		CheckAndSetInstance();
+		bulletCount = 0;
+		effectPool = GetProperEffectPool();
 	}
 
 	public void NewBullet (Vector3 position, Vector3 direction) {
@@ -52,7 +54,7 @@ public class SimpleBulletPool : RigidbodyPool {
 			SimpleBulletScript bulletScript = bulletObject.GetComponent<SimpleBulletScript>();
 			bulletScript.damage = bulletDamage;
 			bulletScript.pool = this;
-			bulletScript.effectPool = GetProperEffectPool();
+			bulletScript.effectPool = effectPool;
 			bullet = bulletObject.GetComponent<Rigidbody>();
 		}
 		bullet.gameObject.SetActive(true);

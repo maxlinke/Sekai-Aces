@@ -49,7 +49,7 @@ public class ParticleEffectPool : ObjectPool {
 		returningEffects.Clear();
 	}
 
-	public void ReturnToInactivePool(PooledParticleEffect effect){
+	public void ReturnToInactivePool (PooledParticleEffect effect) {
 		if(effect.gameObject.activeSelf){
 			effect.gameObject.SetActive(false);
 			activeEffects.Remove(effect);
@@ -57,7 +57,11 @@ public class ParticleEffectPool : ObjectPool {
 		}
 	}
 
-	public void NewEffect(Vector3 position, Vector3 direction, bool onPlayArea, int layer){
+	public void NewEffect (Vector3 position, Vector3 direction, bool onPlayArea, int layer) {
+		NewEffect(position, direction, (onPlayArea ? this.transform : null), layer);
+	}
+
+	public void NewEffect (Vector3 position, Vector3 direction, Transform parent, int layer) {
 		PooledParticleEffect effect;
 		if(!TryTakeEffectFromInactivePool(out effect)){
 			effectCount++;
@@ -67,7 +71,7 @@ public class ParticleEffectPool : ObjectPool {
 			effect.pool = this;
 		}
 		effect.gameObject.SetActive(true);
-		effect.gameObject.transform.parent = (onPlayArea ? this.transform : null);
+		effect.gameObject.transform.parent = parent;
 		effect.transform.position = position;
 		effect.transform.localRotation = Quaternion.LookRotation(direction);
 		effect.SetLayerIncludingAllChildren(effect.gameObject, layer);

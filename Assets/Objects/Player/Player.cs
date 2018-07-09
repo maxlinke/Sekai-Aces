@@ -66,7 +66,7 @@ public class Player : MonoBehaviour {
 
 	void OnCollisionEnter (Collision collision) {
 		if(collision.gameObject.layer == LayerMask.NameToLayer("Obstacle")){
-			playerHealthSystem.ObstacleCollision();
+			if(playerHealthSystem.enabled) playerHealthSystem.ObstacleCollision();
 		}
 		IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
 		if(damageable != null){
