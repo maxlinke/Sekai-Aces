@@ -18,7 +18,7 @@ public class PlayerDeathSystem : MonoBehaviour {
 	bool exploded;
 
 	void Start () {
-		fireballPool = ParticleEffectPool.GetFireballPoolMedium();
+		fireballPool = ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.FIREBALL_MEDIUM);
 	}
 	
 	void Update () {

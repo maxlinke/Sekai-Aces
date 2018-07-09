@@ -32,6 +32,9 @@ public class PowerUp : MonoBehaviour {
 		this.type = type;
 		this.pool = pool;
 		ActivateProperModel(type);
+		//TODO actual proper models
+		//TODO spin them or something
+		//probably need the current mode as well
 		rb.velocity = Vector3.back * speed;
 	}
 

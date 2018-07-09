@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class ParticleEffectPool : ObjectPool {
 
-	static ParticleEffectPool fireballPoolMediumInstance;
-	static ParticleEffectPool fireballPoolSmallInstance;
+	static SortedList<EffectType, ParticleEffectPool> map;
 
 	[SerializeField] EffectType type;
 	[SerializeField] GameObject effectPrefab;
@@ -16,9 +15,19 @@ public class ParticleEffectPool : ObjectPool {
 	List<PooledParticleEffect> inactiveEffects;
 	List<PooledParticleEffect> returningEffects;
 
-	enum EffectType{
+	public enum EffectType{
 		FIREBALL_SMALL,
-		FIREBALL_MEDIUM
+		FIREBALL_MEDIUM,
+		BULLETHIT_FRIENDLY,
+		BULLETHIT_ENEMY
+	}
+
+	static ParticleEffectPool () {
+		map = new SortedList<EffectType, ParticleEffectPool>();
+	}
+
+	void OnDestroy () {
+		map.Remove(this.type);
 	}
 
 	public override void Initialize () {
@@ -78,26 +87,20 @@ public class ParticleEffectPool : ObjectPool {
 		}
 	}
 
-	public static ParticleEffectPool GetFireballPoolSmall(){
-		return fireballPoolSmallInstance;
+	public static ParticleEffectPool GetPool(EffectType type){
+		ParticleEffectPool output;
+		if(map.TryGetValue(type, out output)){
+			return output;
+		}else{
+			throw new UnityException("No pool in the map for type \"" + type.ToString() + "\". Maybe it wasn't instantiated?");
+		}
 	}
 
-	public static ParticleEffectPool GetFireballPoolMedium(){
-		return fireballPoolMediumInstance;
-	}
-
-	void CheckAndSetInstance(){
-		switch(type){
-		case EffectType.FIREBALL_SMALL:
-			if(fireballPoolSmallInstance != null) throw new UnityException("Small Fireball Pool instance is not null (Singleton violation)");
-			else fireballPoolSmallInstance = this;
-			break;
-		case EffectType.FIREBALL_MEDIUM:
-			if(fireballPoolMediumInstance != null) throw new UnityException("Medium Fireball Pool Instance is not null (Singleton violation)");
-			else fireballPoolMediumInstance = this;
-			break;
-		default:
-			throw new UnityException("Unknown Effect Pool Type \"" + type.ToString() + "\"");
+	void CheckAndSetInstance () {
+		if(!map.ContainsKey(this.type)){
+			map.Add(this.type, this);
+		}else{
+			throw new UnityException("There is already a pool in the map for type \"" + this.type.ToString() + "\" (Singleton violation)");
 		}
 	}
 

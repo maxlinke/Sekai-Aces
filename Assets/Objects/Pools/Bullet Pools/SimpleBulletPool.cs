@@ -4,12 +4,7 @@ using UnityEngine;
 
 public class SimpleBulletPool : RigidbodyPool {
 
-	static SimpleBulletPool friendlyNormalPoolInstance;
-	static SimpleBulletPool friendlyFastPoolInstance;
-
-	static SimpleBulletPool enemySlowPoolInstance;
-	static SimpleBulletPool enemyNormalPoolInstance;
-	static SimpleBulletPool enemyFastPoolInstance;
+	static SortedList<BulletPoolType, SimpleBulletPool> map;
 
 	[SerializeField] BulletPoolType type;
 
@@ -22,14 +17,22 @@ public class SimpleBulletPool : RigidbodyPool {
 
 	int bulletCount;
 
-	enum BulletPoolType {
+	public float BulletSpeed { get { return bulletSpeed; } }
+
+	public enum BulletPoolType {
 		FRIENDLY_NORMAL, FRIENDLY_FAST, ENEMY_SLOW, ENEMY_NORMAL, ENEMY_FAST
 	}
 
-	public float BulletSpeed { get { return bulletSpeed; } }
-	
+	static SimpleBulletPool () {
+		map = new SortedList<BulletPoolType, SimpleBulletPool>();
+	}
+
 	void Update () {
 		base.SqrDistReturnCheck();
+	}
+
+	void OnDestroy () {
+		map.Remove(this.type);
 	}
 
 	public override void Initialize () {
@@ -49,6 +52,7 @@ public class SimpleBulletPool : RigidbodyPool {
 			SimpleBulletScript bulletScript = bulletObject.GetComponent<SimpleBulletScript>();
 			bulletScript.damage = bulletDamage;
 			bulletScript.pool = this;
+			bulletScript.effectPool = GetProperEffectPool();
 			bullet = bulletObject.GetComponent<Rigidbody>();
 		}
 		bullet.gameObject.SetActive(true);
@@ -58,50 +62,31 @@ public class SimpleBulletPool : RigidbodyPool {
 		activeRBs.Add(bullet);
 	}
 
-	public static SimpleBulletPool GetFriendlyNormalPoolInstance () {
-		return friendlyNormalPoolInstance;
-	}
-
-	public static SimpleBulletPool GetFriendlyFastPoolInstance () {
-		return friendlyFastPoolInstance;
-	}
-
-	public static SimpleBulletPool GetEnemySlowPoolInstance () {
-		return enemySlowPoolInstance;
-	}
-
-	public static SimpleBulletPool GetEnemyNormalPoolInstance () {
-		return enemyNormalPoolInstance;
-	}
-
-	public static SimpleBulletPool GetEnemyFastPoolInstance () {
-		return enemyFastPoolInstance;
+	public static SimpleBulletPool GetPool(BulletPoolType type){
+		SimpleBulletPool output;
+		if(map.TryGetValue(type, out output)){
+			return output;
+		}else{
+			throw new UnityException("No pool in the map for type \"" + type.ToString() + "\". Maybe it wasn't instantiated?");
+		}
 	}
 
 	void CheckAndSetInstance () {
+		if(!map.ContainsKey(this.type)){
+			map.Add(this.type, this);
+		}else{
+			throw new UnityException("There is already a pool in the map for type \"" + this.type.ToString() + "\" (Singleton violation)");
+		}
+	}
+
+	ParticleEffectPool GetProperEffectPool () {
 		switch(type){
-		case BulletPoolType.FRIENDLY_NORMAL: 
-			if(friendlyNormalPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
-			else friendlyNormalPoolInstance = this;
-			break;
-		case BulletPoolType.FRIENDLY_FAST:
-			if(friendlyFastPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
-			else friendlyFastPoolInstance = this;
-			break;
-		case BulletPoolType.ENEMY_SLOW:
-			if(enemySlowPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
-			else enemySlowPoolInstance = this;
-			break;
-		case BulletPoolType.ENEMY_NORMAL:
-			if(enemyNormalPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
-			else enemyNormalPoolInstance = this;
-			break;
-		case BulletPoolType.ENEMY_FAST:
-			if(enemyFastPoolInstance != null) throw new UnityException(type.ToString() + " bulletpool instance is not null (singleton...)");
-			else enemyFastPoolInstance = this;
-			break;
-		default:
-			throw new UnityException("unknown bullet pool type \"" + type.ToString() + "\"");
+		case BulletPoolType.ENEMY_SLOW: return ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.BULLETHIT_ENEMY);
+		case BulletPoolType.ENEMY_NORMAL: return ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.BULLETHIT_ENEMY);
+		case BulletPoolType.ENEMY_FAST: return ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.BULLETHIT_ENEMY);
+		case BulletPoolType.FRIENDLY_NORMAL: return ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.BULLETHIT_FRIENDLY);
+		case BulletPoolType.FRIENDLY_FAST: return ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.BULLETHIT_FRIENDLY);
+		default: throw new UnityException("unsupported bullettype \"" + type.ToString() + "\"");
 		}
 	}
 

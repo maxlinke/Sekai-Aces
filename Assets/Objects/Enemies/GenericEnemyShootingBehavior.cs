@@ -83,13 +83,13 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 	void SetAppropriateBulletPool(){
 		switch(bulletType){
 		case BulletType.SLOW:
-			bulletPool = SimpleBulletPool.GetEnemySlowPoolInstance();
+			bulletPool = SimpleBulletPool.GetPool(SimpleBulletPool.BulletPoolType.ENEMY_SLOW);
 			break;
 		case BulletType.NORMAL:
-			bulletPool = SimpleBulletPool.GetEnemyNormalPoolInstance();
+			bulletPool = SimpleBulletPool.GetPool(SimpleBulletPool.BulletPoolType.ENEMY_NORMAL);
 			break;
 		case BulletType.FAST:
-			bulletPool = SimpleBulletPool.GetEnemyFastPoolInstance();
+			bulletPool = SimpleBulletPool.GetPool(SimpleBulletPool.BulletPoolType.ENEMY_FAST);
 			break;
 		default:
 			throw new UnityException("unknown bullet type " + bulletType.ToString());

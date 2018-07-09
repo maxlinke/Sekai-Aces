@@ -32,8 +32,8 @@ public class PlayerWeaponSystem : MonoBehaviour {
 	Vector3 bulletDirectionScale;
 
 	void Start () {
-		normalBulletPool = SimpleBulletPool.GetFriendlyNormalPoolInstance();
-		fastBulletPool = SimpleBulletPool.GetFriendlyFastPoolInstance();
+		normalBulletPool = SimpleBulletPool.GetPool(SimpleBulletPool.BulletPoolType.FRIENDLY_NORMAL);
+		fastBulletPool = SimpleBulletPool.GetPool(SimpleBulletPool.BulletPoolType.FRIENDLY_FAST);
 		RespawnReset();
 	}
 	
