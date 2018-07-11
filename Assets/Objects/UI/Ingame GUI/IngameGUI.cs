@@ -6,6 +6,7 @@ public class IngameGUI : MonoBehaviour {
 
 	[SerializeField] PlayerGUI p1GUI;
 	[SerializeField] PlayerGUI p2GUI;
+	[SerializeField] ScoreGUI scoreGUI;
 
 	void Awake () {
 		p1GUI.gameObject.SetActive(false);
@@ -32,4 +33,9 @@ public class IngameGUI : MonoBehaviour {
 			throw new UnityException("Unsupported playernumber \"" + playerNumber.ToString() + "\"");
 		}
 	}
+
+	public void InitScoreGUI (ScoreSystem scoreSystem, StageManager.Stage currentStage) {
+		scoreGUI.Initialize(scoreSystem, currentStage);
+	}
+
 }

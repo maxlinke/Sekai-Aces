@@ -14,7 +14,7 @@ public class PlayerMovementSystem : MonoBehaviour {
 	[SerializeField] float dodgeLerpPower;
 
 		[Header("Gameplay Mode Differences")]
-	[SerializeField] Vector3 topDownMoveSpeed;
+	[SerializeField] Vector3 topDownMoveSpeed;	//TODO load these from the playarea, the dimensions and such...
 	[SerializeField] Vector3 sideMoveSpeed;
 	[SerializeField] Vector3 backMoveSpeed;
 

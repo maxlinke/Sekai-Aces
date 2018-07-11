@@ -13,7 +13,7 @@ public class StageManager : MonoBehaviour {
 		ENDLESS
 	}
 
-	[SerializeField] SceneAsset cityStage;
+	[SerializeField] SceneAsset cityStage;	//TODO refactor to strings. not hard, just 5 minutes of stuff
 	[SerializeField] SceneAsset skyStage;
 	[SerializeField] SceneAsset orbitStage;
 	[SerializeField] SceneAsset endlessStage;

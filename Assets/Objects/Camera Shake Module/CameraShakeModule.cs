@@ -25,7 +25,7 @@ public class CameraShakeModule : MonoBehaviour, IPlayerPrefSettingsObserver {
 		shakeOffset = Vector3.zero;
 	}
 
-	IEnumerator ShakeCoroutine(float strength, float duration, float speed){
+	IEnumerator ShakeCoroutine (float strength, float duration, float speed) {
 		float shakeStrength = strength;
 		float shakeDuration = duration;
 		float shakeSpeed = speed;
@@ -43,27 +43,27 @@ public class CameraShakeModule : MonoBehaviour, IPlayerPrefSettingsObserver {
 		}
 	}
 
-	public static void Shake(float strength, float duration, float speed){
+	public static void Shake (float strength, float duration, float speed) {
 		instance.StartShakeCoroutine(strength, duration, speed);
 	}
 
-	void StartShakeCoroutine(float strength, float duration, float speed){
+	void StartShakeCoroutine (float strength, float duration, float speed) {
 		StartCoroutine(ShakeCoroutine(strength, duration, speed));
 	}
 
-	public void StopAllShaking(){
+	public void StopAllShaking () {
 		StopAllCoroutines();
 	}
 
-	public void AddSelfToPlayerPrefObserverList(){
+	public void AddSelfToPlayerPrefObserverList () {
 		PlayerPrefManager.AddObserver(this);
 	}
 
-	public void NotifyPlayerSettingsChanged(){
+	public void NotifyPlayerSettingsChanged () {
 		ReloadSettings();
 	}
 
-	void ReloadSettings(){
+	void ReloadSettings () {
 		universalShakeMultiplier = PlayerPrefManager.GetFloat("game_screenshakemultiplier");
 	}
 

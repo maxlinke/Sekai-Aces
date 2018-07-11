@@ -126,6 +126,7 @@ public class GameStartMenu : MonoBehaviour {
 				PlayerPrefManager.SetString("game_p2_input", p2Input.ToString());
 			}
 			PlayerPrefManager.SetString("game_difficulty", difficulty.ToString());
+			PlayerPrefManager.SetString("game_currentstage", stage.ToString());
 			StageManager.current.LoadStage(stage);
 		}else{
 			Debug.LogError("this line shouldnt be reachable since the button should be disabled if the game cant be started");

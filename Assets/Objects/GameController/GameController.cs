@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEditor;
 
 public class GameController : MonoBehaviour {
 
-	[SerializeField] SceneAsset mainMenuScene;
+	[SerializeField] string mainMenuSceneName;
 
 		[Header("Prefabs")]
 	[SerializeField] GameObject playerPrefab;
@@ -20,6 +19,7 @@ public class GameController : MonoBehaviour {
 	[SerializeField] CameraShakeModule cameraShakeModule;
 	[SerializeField] IntroSequence introSequence;
 	[SerializeField] EnemySpawner enemySpawner;
+	[SerializeField] ScoreSystem scoreSystem;
 
 		[Header("Game Settings")]
 	[SerializeField] float levelResetPlayerControlDelay;
@@ -33,6 +33,7 @@ public class GameController : MonoBehaviour {
 		[Header("Level Settings")]
 	[SerializeField] GameplayMode initialMode;
 
+	StageManager.Stage currentStage;
 	GameDifficulty.DifficultyLevel difficulty;
 	List<ObjectPool> objectPools;
 	Player[] players;
@@ -41,27 +42,33 @@ public class GameController : MonoBehaviour {
 	bool[] playerGameover;
 	int playerMaxLives;
 
-	void Start(){
+	void Start () {
 		pauseMenu.gameController = this;
 		introSequence.gameController = this;
 		objectPools = new List<ObjectPool>();
 		LoadDifficulty();
+		LoadCurrentStageName();
 		LoadPools();
 		LoadPlayers();
+		gui.InitScoreGUI(scoreSystem, currentStage);
 		gui.gameObject.SetActive(false);
 		pauseMenu.gameObject.SetActive(false);
 		introSequence.StartIntroSequence();
+		Debug.Log("TODO, prewarm pools");	//TODO prewarm pools
 	}
 
-	void Update(){
+	void Update () {
 		if(Input.GetKeyDown(KeyCode.Alpha1)) TransitionToGameplayMode(GameplayMode.TOPDOWN);
 		if(Input.GetKeyDown(KeyCode.Alpha2)) TransitionToGameplayMode(GameplayMode.SIDE);
 		if(Input.GetKeyDown(KeyCode.Alpha3)) TransitionToGameplayMode(GameplayMode.BACK);
 	}
 
-	public void ResetLevel(){
+	public void ResetLevel () {
 		StopAllCoroutines();
 		Time.timeScale = 1f;
+
+		//TODO highscoresystem.submitscore(scoresystem.gettotalscore)
+		scoreSystem.ResetScore();
 
 		gui.gameObject.SetActive(true);
 		pauseMenu.gameObject.SetActive(false);
@@ -98,7 +105,7 @@ public class GameController : MonoBehaviour {
 
 	}
 
-	public void TogglePause(){
+	public void TogglePause () {
 		bool totalGameover = GetTotalGameover();
 		if(!totalGameover){
 			bool paused = pauseMenu.gameObject.activeSelf;
@@ -110,34 +117,34 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	public void PauseGame(){
+	public void PauseGame () {
 		Time.timeScale = 0f;
 		pauseMenu.InitializeForPause();
 		pauseMenu.gameObject.SetActive(true);
 	}
 
-	public void UnpauseGame(){
+	public void UnpauseGame () {
 		Time.timeScale = 1f;
 		pauseMenu.gameObject.SetActive(false);
 	}
 
-	public void ExitToMenu(){
+	public void ExitToMenu () {
 		Time.timeScale = 1f;
-		SceneManager.LoadScene(mainMenuScene.name);
+		SceneManager.LoadScene(mainMenuSceneName);
 	}
 
-	public void TransitionToGameplayMode(GameplayMode newMode){
+	public void TransitionToGameplayMode (GameplayMode newMode) {
 		enemySpawner.SetMode(newMode);
 		StartCoroutine(WaitForRightConditionsAndTransition(newMode));
 	}
 
-	public void RequestRespawn(Player pc){
+	public void RequestRespawn (Player pc) {
 		int playerIndex = pc.PlayerNumber - 1;
 		playerRespawnStartTimes[playerIndex] = Time.time + respawnDelay;
 		StartCoroutine(WaitAndRespawnPlayerCoroutine(pc));
 	}
 
-	public void NotifyGameover(Player pc){
+	public void NotifyGameover (Player pc) {
 		int playerIndex = pc.PlayerNumber - 1;
 		playerGameover[playerIndex] = true;
 		bool totalGameover = GetTotalGameover();
@@ -146,7 +153,7 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	bool GetTotalGameover(){
+	bool GetTotalGameover () {
 		bool totalGameover = true;
 		for(int i=0; i<playerGameover.Length; i++){
 			totalGameover &= playerGameover[i];
@@ -154,13 +161,13 @@ public class GameController : MonoBehaviour {
 		return totalGameover;
 	}
 
-	IEnumerator WaitAndEnablePlayerControl(Player pc, float delay){
+	IEnumerator WaitAndEnablePlayerControl (Player pc, float delay) {
 		yield return new WaitForSeconds(delay);
 		pc.enabled = true;
 		pc.SetRegularComponentsActive(true);
 	}
 
-	IEnumerator GameOverTimeFadeAndEnableMenu(){
+	IEnumerator GameOverTimeFadeAndEnableMenu () {
 		yield return new WaitForSeconds(gameoverDelay);
 		float progress = 0f;
 		float startTime = Time.unscaledTime;
@@ -174,7 +181,7 @@ public class GameController : MonoBehaviour {
 		pauseMenu.gameObject.SetActive(true);
 	}
 
-	IEnumerator WaitForRightConditionsAndTransition(GameplayMode newMode){
+	IEnumerator WaitForRightConditionsAndTransition (GameplayMode newMode) {
 		bool respawnInProgress = RespawnIsInProgress();
 		while(respawnInProgress){
 			yield return null;
@@ -204,7 +211,7 @@ public class GameController : MonoBehaviour {
 		playArea.SetMode(newMode);
 	}
 
-	IEnumerator WaitAndRespawnPlayerCoroutine(Player pc){
+	IEnumerator WaitAndRespawnPlayerCoroutine (Player pc) {
 		int playerIndex = pc.PlayerNumber - 1;
 		while(Time.time < playerRespawnStartTimes[playerIndex]){
 			yield return null;
@@ -219,13 +226,18 @@ public class GameController : MonoBehaviour {
 		pc.FinishRespawn();
 	}
 
-	void LoadDifficulty(){
+	void LoadDifficulty () {
 		difficulty = GameDifficulty.ParseGameDifficulty(PlayerPrefManager.GetString("game_difficulty"));
 		playerMaxLives = GameDifficulty.GetPlayerLives(difficulty);
 		Debug.Log(difficulty);
 	}
 
-	void LoadPools(){
+	void LoadCurrentStageName () {
+		currentStage = StageManager.ParseStage(PlayerPrefManager.GetString("game_currentstage"));
+		Debug.Log(currentStage.ToString());
+	}
+
+	void LoadPools () {
 		foreach(GameObject poolPrefab in objectPoolPrefabs){
 			GameObject poolObject = InstantiateToPlayAreaAndGetObject(poolPrefab);
 			ObjectPool pool = poolObject.GetComponent<ObjectPool>();
@@ -234,7 +246,7 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	GameObject InstantiateToPlayAreaAndGetObject(GameObject prefab){
+	GameObject InstantiateToPlayAreaAndGetObject (GameObject prefab) {
 		GameObject obj = Instantiate(prefab) as GameObject;
 		obj.transform.parent = playArea.gameObject.transform;
 		obj.transform.localPosition = Vector3.zero;
@@ -242,7 +254,7 @@ public class GameController : MonoBehaviour {
 		return obj;
 	}
 
-	void LoadPlayers(){
+	void LoadPlayers () {
 		int playerCount = PlayerPrefManager.GetInt("game_playercount");
 
 		players = new Player[playerCount];
@@ -268,7 +280,7 @@ public class GameController : MonoBehaviour {
 		}
 	}
 
-	void InstantiateAndInitializePlayer(int playerNumber, out Player player){
+	void InstantiateAndInitializePlayer (int playerNumber, out Player player) {
 		GameObject playerObject = Instantiate(playerPrefab) as GameObject;
 		char numberChar = playerNumber.ToString().ToCharArray()[0];
 		string inputKey = "game_p#_input".Replace('#', numberChar);
@@ -282,7 +294,7 @@ public class GameController : MonoBehaviour {
 		player.transform.parent = playArea.transform;
 	}
 
-	bool RespawnIsInProgress(){
+	bool RespawnIsInProgress () {
 		for(int i=0; i<players.Length; i++){
 			if(players[i].IsRespawning) return true;
 		}
