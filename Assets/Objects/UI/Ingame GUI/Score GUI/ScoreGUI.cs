@@ -48,10 +48,14 @@ public class ScoreGUI : MonoBehaviour {
 		return scoreString;
 	}
 
-	void ReloadHighscores () {
-		int high1 = PlayerPrefManager.GetInt("highscore_1_" + currentStage.ToString());
-		int high2 = PlayerPrefManager.GetInt("highscore_2_" + currentStage.ToString());
-		int high3 = PlayerPrefManager.GetInt("highscore_3_" + currentStage.ToString());
+	void ReloadHighscore () {
+		//only load the highest score and display that
+		//for the endscreen check if it's a new highscore and stuff...
+		//3 letter input thing.
+		//if keyboard input (ugh, that's going to be a bitch to do) use the key, otherwise if it's a direction (via input manager, horizontal i guess ? )
+//		int high1 = PlayerPrefManager.GetInt("highscore_1_" + currentStage.ToString());
+//		int high2 = PlayerPrefManager.GetInt("highscore_2_" + currentStage.ToString());
+//		int high3 = PlayerPrefManager.GetInt("highscore_3_" + currentStage.ToString());
 		Debug.Log("TODO");
 		//TODO loading (and also saving) highscores
 	}

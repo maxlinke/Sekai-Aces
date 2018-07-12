@@ -12,10 +12,10 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 
 	[SerializeField] GameObject[] bulletOrigins;
 
-	[SerializeField] int numberOfBurstShots;
-	[SerializeField] float burstDuration;
-	[SerializeField] float sweepAngle;
-	[SerializeField] float weaponSpread;
+	public int numberOfBurstShots;
+	public float burstDuration;
+	public float sweepAngle;
+	public float weaponSpread;
 
 	GameplayMode gameplayMode;
 	Vector3 bulletDirectionScale;
@@ -39,7 +39,8 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 	public enum FiringDirection{
 		NEGATIVEZ,
 		FORWARD,
-		PLAYERDIRECT
+		PLAYERDIRECT,
+		PLAYERPREDICT
 	}
 
 	public void Initialize(Player[] players){
@@ -65,6 +66,10 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 			StartCoroutine(SweepingBurstFiringAction());
 			break;
 		}
+	}
+
+	public Vector3 GetShootDirection(){
+		return GetFiringDirectionForTargetingMode(firingDirection);
 	}
 
 	Vector3 GetDirectionScaleVector(){
@@ -180,6 +185,8 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 			return transform.forward;
 		case FiringDirection.PLAYERDIRECT:
 			return GetVectorToNearestLivingPlayer();
+		case FiringDirection.PLAYERPREDICT:
+			return GetPrecictVectorToNearestLivingPlayer();
 		default:
 			throw new UnityException("unsupported targetingmode \"" + mode.ToString() + "\"");
 		}
@@ -205,6 +212,18 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 		Player nearestLivingPlayer = GetNearestLivingPlayer();
 		if(nearestLivingPlayer != null){
 			return (nearestLivingPlayer.transform.position - this.transform.position).normalized;
+		}else{
+			return Vector3.zero;
+		}
+	}
+
+	Vector3 GetPrecictVectorToNearestLivingPlayer(){
+		Player nearestLivingPlayer = GetNearestLivingPlayer();
+		if(nearestLivingPlayer != null){
+			Vector3 difference = (nearestLivingPlayer.transform.position - this.transform.position);
+			float timeToArrival = difference.magnitude / bulletPool.BulletSpeed;
+			Vector3 positionThen = nearestLivingPlayer.transform.position + (nearestLivingPlayer.GetVelocity() * timeToArrival);
+			return (positionThen - this.transform.position).normalized;
 		}else{
 			return Vector3.zero;
 		}

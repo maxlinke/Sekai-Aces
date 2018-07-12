@@ -44,6 +44,11 @@ public class TrackFollower : MonoBehaviour {
 		StartCoroutine(SpeedChangeCoroutine(newSpeed, duration));
 	}
 
+	public void ChangeSpline (BezierSpline newSpline) {
+		spline = newSpline;
+		positionOnSpline = newSpline.GetClosestPosition(transform.position);
+	}
+
 	IEnumerator SpeedChangeCoroutine(float newSpeed, float timeSpan){
 		float startSpeed = speed;
 		float startTime = Time.time;
