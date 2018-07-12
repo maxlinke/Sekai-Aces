@@ -7,20 +7,18 @@ public class TrackFollower : MonoBehaviour {
 
 	[SerializeField] BezierSpline spline;
 	[SerializeField] float initialSpeed;
+	[SerializeField] float initialPosition;
 
-	float positionOnSpline;
+	float position;
 	float speed;
-
-	float desiredSpeed;
-	float speedChangeDuration;
 
 	Vector3 currentPos;
 	Vector3 lastPos;
 
 	void Update () {
-		transform.position = spline.MoveAlongSpline(ref positionOnSpline, speed * Time.deltaTime);
-		positionOnSpline -= (int)Mathf.Floor(positionOnSpline);
-		transform.rotation = spline.GetRotation(positionOnSpline);
+		transform.position = spline.MoveAlongSpline(ref position, speed * Time.deltaTime);
+		position -= (int)Mathf.Floor(position);
+		transform.rotation = spline.GetRotation(position);
 
 		lastPos = currentPos;
 		currentPos = transform.position;
@@ -28,7 +26,7 @@ public class TrackFollower : MonoBehaviour {
 
 	public void LevelReset () {
 		StopAllCoroutines();
-		positionOnSpline = 0;
+		position = initialPosition;
 		speed = initialSpeed;
 	}
 
@@ -46,7 +44,7 @@ public class TrackFollower : MonoBehaviour {
 
 	public void ChangeSpline (BezierSpline newSpline) {
 		spline = newSpline;
-		positionOnSpline = newSpline.GetClosestPosition(transform.position);
+		position = newSpline.GetClosestPosition(transform.position);
 	}
 
 	IEnumerator SpeedChangeCoroutine(float newSpeed, float timeSpan){
@@ -60,7 +58,5 @@ public class TrackFollower : MonoBehaviour {
 		}
 		speed = newSpeed;
 	}
-
-	//TODO this thing gets its own layer that only "collides" with triggers along the track... or more like the triggers only get triggered by this thing. i suppose i could just check a tag via script too, probably not many trigger events
 
 }

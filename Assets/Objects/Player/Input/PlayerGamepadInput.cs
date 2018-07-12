@@ -52,7 +52,7 @@ public class PlayerGamepadInput : PlayerInput {
 
 	public override Vector2 GetMoveInput(){
 		float xInput = Input.GetAxisRaw(axis_move_x);
-		float yInput = Input.GetAxisRaw(axis_move_y) * (-1f);
+		float yInput = Input.GetAxisRaw(axis_move_y);
 		return new Vector2(xInput, yInput);
 	}
 
