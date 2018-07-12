@@ -5,23 +5,19 @@ using UnityEngine.UI;
 
 public class PlayerGUI : MonoBehaviour {
 
-	[Header("Colors")]
-	[SerializeField] Color activatedColor;
-	[SerializeField] Color deactivatedColor;
-
-	[Header("Text Components")]
+		[Header("Text Components")]
 	[SerializeField] Text dodgeText;
 	[SerializeField] Text livesText;
 	[SerializeField] Text spwText;
 
-	[Header("Image Components")]
+		[Header("Image Components")]
 	[SerializeField] Image dodgeBorder;
 	[SerializeField] Image livesBorder;
 	[SerializeField] Image livesImage;
 	[SerializeField] Image spwBorder;
 	[SerializeField] Image spwImage;
 
-	[Header("Sprites")]
+		[Header("Sprites")]
 	[SerializeField] Sprite razorbackPlaneSprite;
 	[SerializeField] Sprite razorbackSPWSprite;
 	[SerializeField] Sprite waspPlaneSprite;
@@ -31,13 +27,8 @@ public class PlayerGUI : MonoBehaviour {
 	[SerializeField] Sprite spectrePlaneSprite;
 	[SerializeField] Sprite spectreSPWSprite;
 
-	void Start () {
-		
-	}
-	
-	void Update () {
-		
-	}
+	[HideInInspector] public Color activatedColor;
+	[HideInInspector] public Color deactivatedColor;
 
 	public void Initialize (Player.PlaneType planeType) {
 		switch(planeType){

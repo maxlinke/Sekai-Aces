@@ -40,16 +40,8 @@ public class TrackFollower : MonoBehaviour {
 		speed = value;
 	}
 
-	public void SetDesiredSpeed(float desiredSpeed){
-		this.desiredSpeed = desiredSpeed;
-	}
-
-	public void SetSpeedChangeDuration(float speedChangeDuration){
-		this.speedChangeDuration = speedChangeDuration;
-	}
-
-	public void StartSpeedChange(){
-		StartCoroutine(SpeedChangeCoroutine(desiredSpeed, speedChangeDuration));
+	public void ChangeSpeed (float newSpeed, float duration) {
+		StartCoroutine(SpeedChangeCoroutine(newSpeed, duration));
 	}
 
 	IEnumerator SpeedChangeCoroutine(float newSpeed, float timeSpan){

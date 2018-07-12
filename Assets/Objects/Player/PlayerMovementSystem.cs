@@ -8,27 +8,36 @@ public class PlayerMovementSystem : MonoBehaviour {
 	[SerializeField] Rigidbody rb;
 
 		[Header("Variables")]
+	[SerializeField] float moveSpeed;
 	[SerializeField] float dodgeDistance;
 	[SerializeField] float dodgeDuration;
 	[SerializeField] float dodgeCooldown;
 	[SerializeField] float dodgeLerpPower;
-
-		[Header("Gameplay Mode Differences")]
-	[SerializeField] Vector3 topDownMoveSpeed;	//TODO load these from the playarea, the dimensions and such...
-	[SerializeField] Vector3 sideMoveSpeed;
-	[SerializeField] Vector3 backMoveSpeed;
 
 	[HideInInspector] public PlayerInput playerInput;
 	[HideInInspector] public PlayerModel playerModel;
 	[HideInInspector] public PlayerGUI gui;
 
 	GameplayMode mode;
-	public GameplayMode Mode{
-		set{
+	public GameplayMode Mode {
+		set {
 			mode = value;
 			UpdateRBConstraints();
 		}
 	}
+
+	public PlayArea playArea {
+		set {
+			topDownMoveSpeed = moveSpeed * value.topAreaDimensions;
+			sideMoveSpeed = moveSpeed * value.sideAreaDimensions;
+			backMoveSpeed = moveSpeed * value.backAreaDimensions;
+		}
+	}
+
+
+	Vector3 topDownMoveSpeed;
+	Vector3 sideMoveSpeed;
+	Vector3 backMoveSpeed;
 
 	Vector3 dodgeVelocity;
 	Vector3 dodgePos;

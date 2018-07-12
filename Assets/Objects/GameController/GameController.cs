@@ -33,7 +33,7 @@ public class GameController : MonoBehaviour {
 		[Header("Level Settings")]
 	[SerializeField] GameplayMode initialMode;
 
-	StageManager.Stage currentStage;
+	LevelLoader.Stage currentStage;
 	GameDifficulty.DifficultyLevel difficulty;
 	List<ObjectPool> objectPools;
 	Player[] players;
@@ -67,10 +67,9 @@ public class GameController : MonoBehaviour {
 		StopAllCoroutines();
 		Time.timeScale = 1f;
 
-		//TODO highscoresystem.submitscore(scoresystem.gettotalscore)
 		scoreSystem.ResetScore();
 
-		gui.gameObject.SetActive(true);
+		gui.gameObject.SetActive(true);		//TODO only enable the ui upon player control
 		pauseMenu.gameObject.SetActive(false);
 		cameraShakeModule.StopAllShaking();
 
@@ -179,6 +178,7 @@ public class GameController : MonoBehaviour {
 		Time.timeScale = 0f;
 		pauseMenu.InitializeForGameover();
 		pauseMenu.gameObject.SetActive(true);
+		//TODO submit highscore
 	}
 
 	IEnumerator WaitForRightConditionsAndTransition (GameplayMode newMode) {
@@ -233,7 +233,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	void LoadCurrentStageName () {
-		currentStage = StageManager.ParseStage(PlayerPrefManager.GetString("game_currentstage"));
+		currentStage = LevelLoader.ParseStage(PlayerPrefManager.GetString("game_currentstage"));
 		Debug.Log(currentStage.ToString());
 	}
 

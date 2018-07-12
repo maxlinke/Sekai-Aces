@@ -4,21 +4,23 @@ using UnityEngine;
 
 public class IngameGUI : MonoBehaviour {
 
+		[Header("Components")]
 	[SerializeField] PlayerGUI p1GUI;
 	[SerializeField] PlayerGUI p2GUI;
 	[SerializeField] ScoreGUI scoreGUI;
 
-	void Awake () {
-		p1GUI.gameObject.SetActive(false);
-		p2GUI.gameObject.SetActive(false);
-	}
+		[Header("Settings")]
+	[SerializeField] Color activeColor;
+	[SerializeField] Color inactiveColor;
 
-	void Start () {
-		
-	}
-	
-	void Update () {
-		
+	void Awake () {
+		p1GUI.activatedColor = activeColor;
+		p1GUI.deactivatedColor = inactiveColor;
+		p1GUI.gameObject.SetActive(false);
+		p2GUI.activatedColor = activeColor;
+		p2GUI.deactivatedColor = inactiveColor;
+		p2GUI.gameObject.SetActive(false);
+		scoreGUI.color = activeColor;
 	}
 
 	public PlayerGUI ActivateAndGetPlayerGUI(int playerNumber){
@@ -34,7 +36,7 @@ public class IngameGUI : MonoBehaviour {
 		}
 	}
 
-	public void InitScoreGUI (ScoreSystem scoreSystem, StageManager.Stage currentStage) {
+	public void InitScoreGUI (ScoreSystem scoreSystem, LevelLoader.Stage currentStage) {
 		scoreGUI.Initialize(scoreSystem, currentStage);
 	}
 

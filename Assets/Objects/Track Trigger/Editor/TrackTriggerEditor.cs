@@ -9,6 +9,10 @@ public class TrackTriggerEditor : Editor {
 	public override void OnInspectorGUI () {
 		DrawDefaultInspector();
 		TrackTrigger tt = target as TrackTrigger;
+		DrawCustomElements(tt);
+	}
+
+	public static void DrawCustomElements (TrackTrigger tt) {
 		if(tt.curve != null){
 			if(GUILayout.Button("Apply Position")){
 				Undo.RecordObject(tt.transform, "Apply Position (TrackTrigger)");

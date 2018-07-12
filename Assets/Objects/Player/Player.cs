@@ -139,6 +139,7 @@ public class Player : MonoBehaviour {
 		playerMovementSystem.gui = gui;
 		playerWeaponSystem.gui = gui;
 		gui.Initialize(planeType);
+		playerMovementSystem.playArea = playArea;
 		playerDeathSystem.playArea = playArea;
 		playerDeathSystem.levelTrackFollower = levelTrackFollower;
 	}
@@ -171,8 +172,10 @@ public class Player : MonoBehaviour {
 
 	public void FinishRespawn(){
 //		gameObject.layer = LayerMask.NameToLayer("Friendly");
-		SetLayerIncludingAllChildren(this.gameObject, LayerMask.NameToLayer("Friendly"));
-		playerModel.SetBlinking(false);
+		if(!IsDead){
+			SetLayerIncludingAllChildren(this.gameObject, LayerMask.NameToLayer("Friendly"));
+			playerModel.SetBlinking(false);
+		}
 	}
 
 	public void InitiateDeath(bool explode){
@@ -188,10 +191,6 @@ public class Player : MonoBehaviour {
 			playerDeathSystem.InitiateCrash();
 		}
 
-		//TODO if explode, explode
-		//else transfer to background layer (and wait for collision?)
-		//OR always explode on background layer, debris flies forward with speed of foreground
-		//50/50 chance of instant explosion if not forced explosion?
 		if(lives > 0){
 			gameController.RequestRespawn(this);
 		}else{

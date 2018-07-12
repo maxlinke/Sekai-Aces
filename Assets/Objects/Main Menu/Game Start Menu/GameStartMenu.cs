@@ -36,7 +36,7 @@ public class GameStartMenu : MonoBehaviour {
 	PlayerInput.InputType p1Input;
 	PlayerInput.InputType p2Input;
 	GameDifficulty.DifficultyLevel difficulty;
-	StageManager.Stage stage;
+	LevelLoader.Stage stage;
 
 	bool singleplayer;
 	bool gameReady;
@@ -46,7 +46,7 @@ public class GameStartMenu : MonoBehaviour {
 
 	Player.PlaneType[] planes;
 	PlayerInput.InputType[] inputs;
-	StageManager.Stage[] stages;
+	LevelLoader.Stage[] stages;
 	GameDifficulty.DifficultyLevel[] difficulties;
 
 	//TODO
@@ -59,7 +59,7 @@ public class GameStartMenu : MonoBehaviour {
 		p1Input = PlayerInput.InputType.KEYBOARD;
 		p2Input = PlayerInput.InputType.GAMEPAD1;
 		difficulty = GameDifficulty.DifficultyLevel.NORMAL;
-		stage = StageManager.Stage.ENDLESS;
+		stage = LevelLoader.Stage.DEBUG;
 		SetVariablesToTextFields();
 		planes = GetPlanes();
 		inputs = GetInputs();
@@ -103,8 +103,8 @@ public class GameStartMenu : MonoBehaviour {
 		}
 	}
 
-	StageManager.Stage[] GetStages(){
-		return (StageManager.Stage[])(System.Enum.GetValues(typeof(StageManager.Stage)));
+	LevelLoader.Stage[] GetStages(){
+		return (LevelLoader.Stage[])(System.Enum.GetValues(typeof(LevelLoader.Stage)));
 	}
 
 	GameDifficulty.DifficultyLevel[] GetDifficulties(){
@@ -127,7 +127,7 @@ public class GameStartMenu : MonoBehaviour {
 			}
 			PlayerPrefManager.SetString("game_difficulty", difficulty.ToString());
 			PlayerPrefManager.SetString("game_currentstage", stage.ToString());
-			StageManager.current.LoadStage(stage);
+			LevelLoader.current.LoadStage(stage);
 		}else{
 			Debug.LogError("this line shouldnt be reachable since the button should be disabled if the game cant be started");
 		}
@@ -237,7 +237,7 @@ public class GameStartMenu : MonoBehaviour {
 	}
 
 	public void CycleStage(){
-		stage = NextFromArray<StageManager.Stage>(stage, stages);
+		stage = NextFromArray<LevelLoader.Stage>(stage, stages);
 		stageText.text = stage.ToString();
 	}
 

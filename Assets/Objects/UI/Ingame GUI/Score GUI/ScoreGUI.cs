@@ -9,32 +9,33 @@ public class ScoreGUI : MonoBehaviour {
 	//TODO potentially jsonified highscore-object that holds the three top highscores
 
 		[Header("Components")]
-	[SerializeField] Text comboScoreText;
-	[SerializeField] Text comboMultiplierText;
-	[SerializeField] Text recordedScoreText;
-	[SerializeField] Text highScoresText;
+	[SerializeField] Text scoreText;
+	[SerializeField] Text multiplierText;
+	[SerializeField] Text highscoreText;
 
 		[Header("Settings")]
 	[SerializeField] int minNumberOfFiguresPerScore;
 
-	StageManager.Stage currentStage;
+	public Color color {
+		set {
+			scoreText.color = value;
+			multiplierText.color = value;
+			highscoreText.color = value;
+		}
+	}
+
+	LevelLoader.Stage currentStage;
 	ScoreSystem scoreSystem;
 
-//	void Start () {
-//		scoreSystem = ScoreSystem.Instance;	//TODO eeeeeeeeehhhhhhhhhh, this could also be set via script
-//		//even for enemies, they could be "initialized" with the score system, which the enemyspawner should know
-//	}
-
-	public void Initialize (ScoreSystem scoreSystem, StageManager.Stage currentStage){
+	public void Initialize (ScoreSystem scoreSystem, LevelLoader.Stage currentStage){
 		this.scoreSystem = scoreSystem;
 		this.currentStage = currentStage;
 	}
 	
 	void Update () {
 		if(Time.time > 0f){	//if not paused...
-			comboScoreText.text = StringifyScore(scoreSystem.ComboScore);
-			comboMultiplierText.text = scoreSystem.ComboMultiplier + "x";
-			recordedScoreText.text = StringifyScore(scoreSystem.RecordedScore);
+			scoreText.text = StringifyScore(scoreSystem.Score);
+			multiplierText.text = scoreSystem.Multiplier + "x";
 		}
 	}
 

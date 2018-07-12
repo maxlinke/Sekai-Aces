@@ -18,6 +18,10 @@ namespace BezierSolution
 
 		public int Count { get { return endPoints.Count; } }
 		public float Length { get { return GetLengthApproximately( 0f, 1f ); } }
+
+		const int closestPosPointsPerSegment = 100;
+		const int closestPosIterations = 2;
+		const int closestPosPointsPerIteration = 10;
 		
 		public BezierPoint this[int index]
 		{
@@ -253,6 +257,8 @@ namespace BezierSolution
 			Vector3 endUp = endPoint.transform.rotation * Vector3.up;
 			Vector3 lerpedUp = Vector3.Slerp(startUp, endUp, localT).normalized;
 
+			//TODO probably interpolate.. quadratically.. i guess. previous point, next point. catlikecoding and stuff
+
 			return Quaternion.LookRotation(forward, lerpedUp);
 		}
 
@@ -314,6 +320,50 @@ namespace BezierSolution
 			}
 
 			return result;
+		}
+
+		//added
+		public float GetClosestPosition (Vector3 point) {
+			float closestPos = 0;
+			float minSqrDist = Mathf.Infinity;
+
+			int segmentCount = (this.loop ? this.Count : (this.Count - 1));
+			int numberOfTestPoints = (segmentCount * closestPosPointsPerSegment) + 1;
+
+			for(int i=0; i<numberOfTestPoints; i++){
+				float pos = ((float)i / (numberOfTestPoints - 1));
+				float sqrDist = (this.GetPoint(pos) - point).sqrMagnitude;
+				if(sqrDist < minSqrDist){
+					closestPos = pos;
+					minSqrDist = sqrDist;
+				}
+				//			Debug.DrawRay(curve.GetPoint(pos), Vector3.up, Color.yellow, 1f, false);
+			}
+
+			float stepDistance = 1f / numberOfTestPoints;
+			float start = Mathf.Clamp01(closestPos + stepDistance);
+			float end = Mathf.Clamp01(closestPos - stepDistance);
+
+			for(int i=0; i<closestPosIterations; i++){
+				for(int j=0; j<closestPosPointsPerIteration; j++){
+					float frac = ((float)j / (closestPosPointsPerIteration - 1));
+					float pos = ((1f - frac) * start) + (frac * end);
+					float sqrDist = (point - this.GetPoint(pos)).sqrMagnitude;
+					if(sqrDist < minSqrDist){
+						minSqrDist = sqrDist;
+						closestPos = pos;
+					}
+					//				Vector3 drawPoint = curve.GetPoint(pos) + (Vector3.down * (0.1f * i));
+					//				Vector3 drawVec = Vector3.down * (1f / (i + 1));
+					//				Color drawCol = ((i % 2 == 0) ? Color.red : Color.blue);
+					//				Debug.DrawRay(drawPoint, drawVec, drawCol, 1f, false);
+				}
+				stepDistance /= (closestPosPointsPerIteration - 1);
+				start = Mathf.Clamp01(closestPos - (2f * stepDistance));
+				end = Mathf.Clamp01(closestPos + (2f * stepDistance));
+			}
+
+			return closestPos;
 		}
 
 		// Obsolete method, changed with a faster and more accurate variant

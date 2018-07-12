@@ -52,13 +52,12 @@ public class PlayerPrefManager{
 
 	private static void InitializeGameSettings(){
 		ints.Add(new IntKeyValuePair("game_playercount", 2));
+		strings.Add(new StringKeyValuePair("game_currentstage", LevelLoader.Stage.DEBUG.ToString()));
 		strings.Add(new StringKeyValuePair("game_difficulty", GameDifficulty.DifficultyLevel.NORMAL.ToString()));
 		strings.Add(new StringKeyValuePair("game_p1_input", PlayerInput.InputType.KEYBOARD.ToString()));
 		strings.Add(new StringKeyValuePair("game_p2_input", PlayerInput.InputType.GAMEPAD1.ToString()));
 		strings.Add(new StringKeyValuePair("game_p1_plane", Player.PlaneType.GRIFFON.ToString()));
 		strings.Add(new StringKeyValuePair("game_p2_plane", Player.PlaneType.WASP.ToString()));
-
-		strings.Add(new StringKeyValuePair("game_currentstage", StageManager.Stage.ORBIT.ToString()));
 
 		floats.Add(new FloatKeyValuePair("game_screenshakemultiplier", 1f));
 	}
