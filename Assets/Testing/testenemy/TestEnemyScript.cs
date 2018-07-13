@@ -12,19 +12,16 @@ public class TestEnemyScript : MonoBehaviour, IDamageable {
 	[SerializeField] float oscillateWidth;
 	[SerializeField] float fireInterval;
 
-	[SerializeField] GenericEnemyShootingBehavior gesb;
+	[SerializeField] GenericEnemyWeapon wep;
 
 	MaterialPropertyBlock mpb;
 	float lastDamageTime;
 	float currentFallOffTime;
 	float nextFire;
-//	SimpleBulletPool bp;
 
 	void Start () {
-//		bp = SimpleBulletPool.GetEnemySlowPoolInstance();
-
-		gesb.Initialize(GameObject.FindObjectsOfType<Player>());
-		gesb.RespawnReset(GameplayMode.TOPDOWN);
+		wep.Initialize(GameObject.FindObjectsOfType<Player>(), GameplayMode.TOPDOWN);
+		wep.RespawnReset();
 
 		currentFallOffTime = fallOffTime;
 		lastDamageTime = Mathf.NegativeInfinity;
@@ -33,13 +30,8 @@ public class TestEnemyScript : MonoBehaviour, IDamageable {
 	}
 	
 	void Update () {
-//		if(bp == null){
-//			bp = SimpleBulletPool.GetEnemySlowPoolInstance();
-//		}
-//		if(Time.time > nextFire && bp != null){
 		if(Time.time > nextFire){
-//			bp.NewBullet(transform.position, new Vector3(Mathf.Sin(Time.time), 0f, Mathf.Cos(Time.time)));
-			gesb.Shoot();
+			wep.Shoot();
 			nextFire = Time.time + fireInterval;
 		}
 		float lerpVal = Mathf.Clamp01((Time.time - lastDamageTime) / currentFallOffTime);

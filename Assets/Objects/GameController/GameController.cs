@@ -18,7 +18,7 @@ public class GameController : MonoBehaviour {
 	[SerializeField] PauseMenu pauseMenu;
 	[SerializeField] CameraShakeModule cameraShakeModule;
 	[SerializeField] IntroSequence introSequence;
-	[SerializeField] EnemySpawner enemySpawner;
+	[SerializeField] EnemySystem enemySystem;
 	[SerializeField] ScoreSystem scoreSystem;
 
 		[Header("Game Settings")]
@@ -50,6 +50,7 @@ public class GameController : MonoBehaviour {
 		LoadCurrentStageName();
 		LoadPools();
 		LoadPlayers();
+		enemySystem.Initialize(players);
 		gui.InitScoreGUI(scoreSystem, currentStage);
 		gui.gameObject.SetActive(false);
 		pauseMenu.gameObject.SetActive(false);
@@ -79,8 +80,10 @@ public class GameController : MonoBehaviour {
 
 		levelTrackFollower.LevelReset();
 
-		enemySpawner.LevelReset();
-		enemySpawner.SetMode(initialMode);
+//		enemySpawner.LevelReset();
+//		enemySpawner.SetMode(initialMode);
+
+		enemySystem.LevelReset();
 
 		foreach(ObjectPool pool in objectPools){
 			pool.ResetPool();
@@ -133,7 +136,7 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void TransitionToGameplayMode (GameplayMode newMode) {
-		enemySpawner.SetMode(newMode);
+//		enemySpawner.SetMode(newMode);
 		StartCoroutine(WaitForRightConditionsAndTransition(newMode));
 	}
 

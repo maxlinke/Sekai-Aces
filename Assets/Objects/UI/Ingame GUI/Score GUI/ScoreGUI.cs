@@ -12,6 +12,7 @@ public class ScoreGUI : MonoBehaviour {
 	[SerializeField] Text scoreText;
 	[SerializeField] Text multiplierText;
 	[SerializeField] Text highscoreText;
+	[SerializeField] Image comboTimerBar;
 
 		[Header("Settings")]
 	[SerializeField] int minNumberOfFiguresPerScore;
@@ -21,6 +22,7 @@ public class ScoreGUI : MonoBehaviour {
 			scoreText.color = value;
 			multiplierText.color = value;
 			highscoreText.color = value;
+			comboTimerBar.color = value;
 		}
 	}
 
@@ -36,6 +38,7 @@ public class ScoreGUI : MonoBehaviour {
 		if(Time.time > 0f){	//if not paused...
 			scoreText.text = StringifyScore(scoreSystem.Score);
 			multiplierText.text = scoreSystem.Multiplier + "x";
+			comboTimerBar.transform.localScale = new Vector3(scoreSystem.comboTimeLeft, 1f, 1f);
 		}
 	}
 

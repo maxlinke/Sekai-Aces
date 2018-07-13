@@ -58,6 +58,9 @@ public class Player : MonoBehaviour {
 			if(Input.GetKeyDown(KeyCode.G) && PlayerNumber == 1){
 				playerHealthSystem.WeaponDamage(999);
 			}
+			if(Input.GetKeyDown(KeyCode.H) && PlayerNumber == 1){
+				ScoreSystem.Instance.AddScore(20);
+			}
 		}
 		if(playerInput.GetPauseInputDown()){
 			gameController.TogglePause();
@@ -200,6 +203,7 @@ public class Player : MonoBehaviour {
 
 	void DealWithPowerup(PowerUp powerUp){
 		PowerUp.PowerUpType powerUpType = powerUp.Type;
+		//TODO shine in powerups color instead of custom
 		switch(powerUpType){
 		case PowerUp.PowerUpType.WEAPON:
 			if(playerWeaponSystem.WeaponCanBeUpgraded()){

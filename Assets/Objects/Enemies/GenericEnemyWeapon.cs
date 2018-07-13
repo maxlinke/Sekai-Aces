@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GenericEnemyShootingBehavior : MonoBehaviour {
+public class GenericEnemyWeapon : MonoBehaviour {
 
 	//TODO this isn't the nicest code i've ever written but it works. refactor if i feel like it
 
+		[Header("Components")]
+	[SerializeField] GameObject aimOrigin;
+	[SerializeField] GameObject[] bulletOrigins;
+
+		[Header("Settings")]
 	[SerializeField] BulletType bulletType;
 	[SerializeField] FiringMode firingMode;
 	[SerializeField] FiringDirection firingDirection;
-
-	[SerializeField] GameObject[] bulletOrigins;
 
 	public int numberOfBurstShots;
 	public float burstDuration;
@@ -43,14 +46,14 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 		PLAYERPREDICT
 	}
 
-	public void Initialize(Player[] players){
+	public void Initialize(Player[] players, GameplayMode mode){
 		this.players = players;
+		this.gameplayMode = mode;
+		bulletDirectionScale = GetDirectionScaleVector();
 		SetAppropriateBulletPool();
 	}
 
-	public void RespawnReset(GameplayMode gameplayMode){
-		this.gameplayMode = gameplayMode;
-		bulletDirectionScale = GetDirectionScaleVector();
+	public void RespawnReset(){
 		StopAllCoroutines();
 	}
 
@@ -198,7 +201,7 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 		for(int i=0; i<players.Length; i++){
 			Player player = players[i];
 			if(!player.IsDead){
-				float sqrDist = (player.transform.position - this.transform.position).sqrMagnitude;
+				float sqrDist = (player.transform.position - aimOrigin.transform.position).sqrMagnitude;
 				if(sqrDist < minSqrDist){
 					minSqrDist = sqrDist;
 					nearestLivingPlayer = player;
@@ -211,7 +214,7 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 	Vector3 GetVectorToNearestLivingPlayer(){
 		Player nearestLivingPlayer = GetNearestLivingPlayer();
 		if(nearestLivingPlayer != null){
-			return (nearestLivingPlayer.transform.position - this.transform.position).normalized;
+			return (nearestLivingPlayer.transform.position - aimOrigin.transform.position).normalized;
 		}else{
 			return Vector3.zero;
 		}
@@ -220,7 +223,7 @@ public class GenericEnemyShootingBehavior : MonoBehaviour {
 	Vector3 GetPrecictVectorToNearestLivingPlayer(){
 		Player nearestLivingPlayer = GetNearestLivingPlayer();
 		if(nearestLivingPlayer != null){
-			Vector3 difference = (nearestLivingPlayer.transform.position - this.transform.position);
+			Vector3 difference = (nearestLivingPlayer.transform.position - aimOrigin.transform.position);
 			float timeToArrival = difference.magnitude / bulletPool.BulletSpeed;
 			Vector3 positionThen = nearestLivingPlayer.transform.position + (nearestLivingPlayer.GetVelocity() * timeToArrival);
 			return (positionThen - this.transform.position).normalized;
