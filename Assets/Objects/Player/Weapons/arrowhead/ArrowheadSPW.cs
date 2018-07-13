@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArrowheadSPWScript : PlayerSpecialWeapon {
+public class ArrowheadSPW : PlayerSpecialWeapon {
 
 	[SerializeField] int maxAmmo;
 	[SerializeField] float fireInterval;

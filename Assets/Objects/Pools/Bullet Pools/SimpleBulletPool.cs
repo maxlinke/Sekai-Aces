@@ -51,7 +51,7 @@ public class SimpleBulletPool : RigidbodyPool {
 			GameObject bulletObject = Instantiate(bulletPrefab) as GameObject;
 			bulletObject.transform.parent = this.transform;
 			bulletObject.name = "bullet " + bulletCount;
-			SimpleBulletScript bulletScript = bulletObject.GetComponent<SimpleBulletScript>();
+			SimpleBullet bulletScript = bulletObject.GetComponent<SimpleBullet>();
 			bulletScript.damage = bulletDamage;
 			bulletScript.pool = this;
 			bulletScript.effectPool = effectPool;

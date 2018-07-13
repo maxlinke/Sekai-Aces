@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FPSCounterScript : MonoBehaviour {
+public class FPSCounter : MonoBehaviour {
 
 	public Text text;
 

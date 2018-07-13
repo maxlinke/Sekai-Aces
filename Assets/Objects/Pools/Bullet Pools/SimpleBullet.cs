@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleBulletScript : MonoBehaviour {
+public class SimpleBullet : MonoBehaviour {
 
 	[SerializeField] Rigidbody rb;
 
