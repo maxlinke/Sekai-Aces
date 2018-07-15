@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ActivatableGenericEnemyContainer : ActivatableContainer {
 
+		[Header("Settings")]
 	[SerializeField] GameplayMode mode;
 	[SerializeField] GenericEnemy[] enemies;
 

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class ActivatableGameObjectContainer : ActivatableContainer {
 
-	GameObject[] objects;
+		[Header("Objects")]
+	[SerializeField] GameObject[] objects;
 
 	public override void LevelReset () {
 		StopAllCoroutines();

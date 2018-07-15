@@ -24,7 +24,7 @@ public class ScoreSystem : MonoBehaviour {
 
 	void Awake () {
 		if(instance != null) throw new UnityException("instance not null");
-		else instance = this;	//TODO remove this singleton nonsense
+		else instance = this;
 	}
 
 	void Update () {

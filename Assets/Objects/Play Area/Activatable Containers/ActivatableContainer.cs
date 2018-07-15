@@ -4,8 +4,15 @@ using UnityEngine;
 
 public abstract class ActivatableContainer : MonoBehaviour {
 
-	[SerializeField] protected ActivationType type;
+		[Header("Type")]
+	[SerializeField] ActivationType type;
 	[SerializeField] protected float staggeredActivationInterval;
+
+		[Header("Retriggering")]
+	[SerializeField] bool retriggerable;
+	[SerializeField] bool resetBeforeRetrigger;
+
+	bool activated;
 
 	public enum ActivationType{
 		ALLATONCE,
@@ -13,13 +20,22 @@ public abstract class ActivatableContainer : MonoBehaviour {
 	}
 
 	public void Activate () {
-		gameObject.SetActive(true);
-		if(type.Equals(ActivationType.ALLATONCE)){
-			ActivateAllAtOnce();
-		}else if(type.Equals(ActivationType.STAGGERED)){
-			ActivateStaggered();
-		}else{
-			throw new UnityException("unknown activationtype \"" + type.ToString() + "\"");
+		if(!activated || retriggerable){
+			if(!activated){
+				activated = true;
+				gameObject.SetActive(true);	//possibly redundant. i dont know. i have this set in the enemysystem to activate everything in the overall reset
+				gameObject.name += " (activated)";
+			}
+			if(retriggerable && resetBeforeRetrigger){
+				LevelReset();
+			}
+			if(type.Equals(ActivationType.ALLATONCE)){
+				ActivateAllAtOnce();
+			}else if(type.Equals(ActivationType.STAGGERED)){
+				ActivateStaggered();
+			}else{
+				throw new UnityException("unknown activationtype \"" + type.ToString() + "\"");
+			}
 		}
 	}
 
