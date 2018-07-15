@@ -5,6 +5,7 @@ using UnityEngine;
 public class ActivatableGenericEnemyContainer : ActivatableContainer {
 
 		[Header("Settings")]
+	[SerializeField] bool autoCreateArray;
 	[SerializeField] GameplayMode mode;
 	[SerializeField] GenericEnemy[] enemies;
 
@@ -12,6 +13,9 @@ public class ActivatableGenericEnemyContainer : ActivatableContainer {
 	Quaternion[] initialRotations;
 
 	public void Initialize (Player[] players) {
+		if(autoCreateArray){
+			enemies = GetComponentsInChildren<GenericEnemy>();
+		}
 		initialPositions = new Vector3[enemies.Length];
 		initialRotations = new Quaternion[enemies.Length];
 		for(int i=0; i<enemies.Length; i++){
@@ -21,7 +25,7 @@ public class ActivatableGenericEnemyContainer : ActivatableContainer {
 		}
 	}
 
-	public override void LevelReset () {
+	protected override void ResetContainer () {
 		StopAllCoroutines();
 		for(int i=0; i<enemies.Length; i++){
 			enemies[i].LevelReset();

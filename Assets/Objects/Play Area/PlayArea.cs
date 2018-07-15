@@ -4,31 +4,28 @@ using UnityEngine;
 
 public class PlayArea : MonoBehaviour {
 		
+	[SerializeField] PrefabPlayAreaContents prefabContents;
+	[SerializeField] Background background;
 	[SerializeField] GameObject worldObstacleContainer;
 
-		[Header("Player Spawnpoints")]
-	[SerializeField] GameObject playerSpawn;
-	[SerializeField] GameObject playerRespawn;
+	GameObject playerSpawn;
+	GameObject playerRespawn;
 
-		[Header("Cameras")]
-	[SerializeField] Camera gameplayCam;
-	[SerializeField] Camera levelCam;
-	[SerializeField] GameObject gameplayCamContainer;
-	[SerializeField] GameObject levelCamContainer;
+	Camera gameplayCam;
+	Camera levelCam;
+	GameObject gameplayCamContainer;
+	GameObject levelCamContainer;
 
-		[Header("Lights")]
-	[SerializeField] Light gameplayLight;
-	[SerializeField] Light levelLight;
+	Light gameplayLight;
+	Light levelLight;
 
-		[Header("Camera Positions")]
-	[SerializeField] GameObject topPosition;
-	[SerializeField] GameObject sidePosition;
-	[SerializeField] GameObject backPosition;
+	GameObject topPosition;
+	GameObject sidePosition;
+	GameObject backPosition;
 
-		[Header("Actual Play Areas")]
-	[SerializeField] GameObject topArea;
-	[SerializeField] GameObject sideArea;
-	[SerializeField] GameObject backArea;
+	GameObject topArea;
+	GameObject sideArea;
+	GameObject backArea;
 
 	GameplayMode currentMode;
 
@@ -40,8 +37,30 @@ public class PlayArea : MonoBehaviour {
 		ABSOLUTELY NO STARTCOROUTINE CALLS IN HERE; THEY ARE ALL TO BE MADE BY THE GAMECONTROLLER!!!
 	*/
 
-	void Start () {
+	void Awake () {
+		LoadValuesFromPrefabContents();
+		LoadValuesFromBackground();
 		levelCam.fieldOfView = gameplayCam.fieldOfView;
+	}
+
+	void LoadValuesFromPrefabContents () {
+		playerSpawn = prefabContents.PlayerSpawn;
+		playerRespawn = prefabContents.PlayerRespawn;
+		gameplayCam = prefabContents.GameplayCam;
+		gameplayCamContainer = prefabContents.GameplayCamContainer;
+		gameplayLight = prefabContents.GameplayLight;
+		topPosition = prefabContents.TopPosition;
+		sidePosition = prefabContents.SidePosition;
+		backPosition = prefabContents.BackPosition;
+		topArea = prefabContents.TopArea;
+		sideArea = prefabContents.SideArea;
+		backArea = prefabContents.BackArea;
+	}
+
+	void LoadValuesFromBackground () {
+		levelCam = background.LevelCam;
+		levelCamContainer = background.LevelCamContainer;
+		levelLight = background.LevelLight;
 	}
 
 	void LateUpdate(){

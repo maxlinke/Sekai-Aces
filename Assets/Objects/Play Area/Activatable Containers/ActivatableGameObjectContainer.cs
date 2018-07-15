@@ -7,7 +7,7 @@ public class ActivatableGameObjectContainer : ActivatableContainer {
 		[Header("Objects")]
 	[SerializeField] GameObject[] objects;
 
-	public override void LevelReset () {
+	protected override void ResetContainer () {
 		StopAllCoroutines();
 		foreach(GameObject obj in objects){
 			obj.SetActive(false);

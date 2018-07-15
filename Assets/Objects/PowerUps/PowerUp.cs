@@ -19,6 +19,7 @@ public class PowerUp : MonoBehaviour {
 		[Header("Settings")]
 	[SerializeField] float speed;
 
+	GameObject activeModel;
 	PowerUpPool pool;
 	PowerUpType type;
 
@@ -26,6 +27,10 @@ public class PowerUp : MonoBehaviour {
 		get {
 			return this.type;
 		}
+	}
+
+	void Update () {
+		activeModel.transform.rotation = Quaternion.Euler(new Vector3(Time.time * 3f, Time.time * 5f, Time.time * 7f) * 20f);
 	}
 
 	public void Initialize (PowerUpType type, PowerUpPool pool) {
@@ -45,23 +50,24 @@ public class PowerUp : MonoBehaviour {
 	void ActivateProperModel (PowerUpType type) {
 		switch(type){
 		case PowerUpType.WEAPON:
-			weaponModel.SetActive(true);
+			activeModel = weaponModel;
 			repairModel.SetActive(false);
 			reloadModel.SetActive(false);
 			break;
 		case PowerUpType.REPAIR:
 			weaponModel.SetActive(false);
-			repairModel.SetActive(true);
+			activeModel = repairModel;
 			reloadModel.SetActive(false);
 			break;
 		case PowerUpType.RELOAD:
 			weaponModel.SetActive(false);
 			repairModel.SetActive(false);
-			reloadModel.SetActive(true);
+			activeModel = reloadModel;
 			break;
 		default:
 			throw new UnityException("Unknown PowerUp-Type \"" + type.ToString() + "\"");
 		}
+		activeModel.SetActive(true);
 	}
 
 }

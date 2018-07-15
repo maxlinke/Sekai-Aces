@@ -5,9 +5,17 @@ using BezierSolution;
 
 public class TrackFollower : MonoBehaviour {
 
+		[Header("Components")]
+	[SerializeField] GameObject camContainer;
+	[SerializeField] Camera cam;
+
+		[Header("Settings")]
 	[SerializeField] BezierSpline spline;
 	[SerializeField] float initialSpeed;
 	[SerializeField] float initialPosition;
+
+	public GameObject CamContainer { get { return camContainer; } }
+	public Camera Cam { get { return cam; } }
 
 	float position;
 	float speed;

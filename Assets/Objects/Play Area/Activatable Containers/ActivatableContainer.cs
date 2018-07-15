@@ -39,10 +39,15 @@ public abstract class ActivatableContainer : MonoBehaviour {
 		}
 	}
 
+	public void LevelReset () {
+		activated = false;
+		ResetContainer();
+	}
+
 	protected abstract void ActivateAllAtOnce ();
 
 	protected abstract void ActivateStaggered ();
 
-	public abstract void LevelReset ();
+	protected abstract void ResetContainer ();
 
 }
