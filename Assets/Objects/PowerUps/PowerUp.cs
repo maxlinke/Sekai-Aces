@@ -20,6 +20,8 @@ public class PowerUp : MonoBehaviour {
 	[SerializeField] float speed;
 
 	GameObject activeModel;
+	Vector3 rotationOffset;
+
 	PowerUpPool pool;
 	PowerUpType type;
 
@@ -30,16 +32,14 @@ public class PowerUp : MonoBehaviour {
 	}
 
 	void Update () {
-		activeModel.transform.rotation = Quaternion.Euler(new Vector3(Time.time * 3f, Time.time * 5f, Time.time * 7f) * 20f);
+		activeModel.transform.rotation = Quaternion.Euler(rotationOffset + (new Vector3(Time.time * 3f, Time.time * 5f, Time.time * 7f) * 20f));
 	}
 
 	public void Initialize (PowerUpType type, PowerUpPool pool) {
 		this.type = type;
 		this.pool = pool;
 		ActivateProperModel(type);
-		//TODO actual proper models
-		//TODO spin them or something
-		//probably need the current mode as well
+		rotationOffset = new Vector3(Random.value, Random.value, Random.value) * 360f;
 		rb.velocity = Vector3.back * speed;
 	}
 
