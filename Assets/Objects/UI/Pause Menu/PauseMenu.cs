@@ -48,6 +48,16 @@ public class PauseMenu : MonoBehaviour {
 		gameoverElementContainer.SetActive(true);
 	}
 
+	public void Resume () {
+		gameController.UnpauseGame();
+	}
 
+	public void Restart () {
+		gameController.ResetLevel();
+	}
+
+	public void Exit () {
+		gameController.ExitToMenu();
+	}
 
 }

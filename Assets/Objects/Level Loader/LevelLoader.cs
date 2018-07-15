@@ -7,11 +7,11 @@ public class LevelLoader : MonoBehaviour {
 
 	public enum Stage{
 		DEBUG,
-		CITY
+		FOREST
 	}
 
-	[SerializeField] string cityStage;
 	[SerializeField] string debugStage;
+	[SerializeField] string forestStage;
 
 	public static LevelLoader current;
 
@@ -26,8 +26,8 @@ public class LevelLoader : MonoBehaviour {
 	public void LoadStage(Stage stage){
 		string sceneToLoad = null;
 		switch(stage){
-		case(Stage.CITY):
-			Debug.Log("todo");
+		case(Stage.FOREST):
+			sceneToLoad = forestStage;
 			break;
 		case(Stage.DEBUG):
 			sceneToLoad = debugStage;

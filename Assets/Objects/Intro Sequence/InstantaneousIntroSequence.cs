@@ -9,10 +9,10 @@ public class InstantaneousIntroSequence : IntroSequence {
 	}
 
 	public override void StartIntroSequence (){
-		//nothing happens
+		gameController.ResetLevel();
 	}
 
 	public override void AbortIntroSequence (){
-		//nothing happens
+		gameController.ResetLevel();
 	}
 }

@@ -46,6 +46,7 @@ public class GameController : MonoBehaviour {
 		pauseMenu.gameController = this;
 		introSequence.gameController = this;
 		objectPools = new List<ObjectPool>();
+		playArea.Initialize();
 		LoadDifficulty();
 		LoadCurrentStageName();
 		LoadPools();
@@ -105,6 +106,18 @@ public class GameController : MonoBehaviour {
 			StartCoroutine(WaitAndEnablePlayerControl(player, levelResetPlayerControlDelay));
 		}
 
+	}
+
+	public void TransitionToTopdownMode () {
+		TransitionToGameplayMode(GameplayMode.TOPDOWN);
+	}
+
+	public void TransitionToSideMode () {
+		TransitionToGameplayMode(GameplayMode.SIDE);
+	}
+
+	public void TransitionToBackMode () {
+		TransitionToGameplayMode(GameplayMode.BACK);
 	}
 
 	public void TogglePause () {

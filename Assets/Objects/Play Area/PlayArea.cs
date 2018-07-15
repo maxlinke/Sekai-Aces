@@ -37,7 +37,7 @@ public class PlayArea : MonoBehaviour {
 		ABSOLUTELY NO STARTCOROUTINE CALLS IN HERE; THEY ARE ALL TO BE MADE BY THE GAMECONTROLLER!!!
 	*/
 
-	void Awake () {
+	public void Initialize () {
 		LoadValuesFromPrefabContents();
 		LoadValuesFromBackground();
 		levelCam.fieldOfView = gameplayCam.fieldOfView;

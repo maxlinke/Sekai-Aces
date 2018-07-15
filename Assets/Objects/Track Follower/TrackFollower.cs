@@ -10,13 +10,14 @@ public class TrackFollower : MonoBehaviour {
 	[SerializeField] Camera cam;
 
 		[Header("Settings")]
-	[SerializeField] BezierSpline spline;
+	[SerializeField] BezierSpline initialSpline;
 	[SerializeField] float initialSpeed;
 	[SerializeField] float initialPosition;
 
 	public GameObject CamContainer { get { return camContainer; } }
 	public Camera Cam { get { return cam; } }
 
+	BezierSpline spline;
 	float position;
 	float speed;
 
@@ -34,6 +35,7 @@ public class TrackFollower : MonoBehaviour {
 
 	public void LevelReset () {
 		StopAllCoroutines();
+		spline = initialSpline;
 		position = initialPosition;
 		speed = initialSpeed;
 	}
