@@ -7,25 +7,26 @@ public class GenericEnemyWeapon : MonoBehaviour {
 	//TODO this isn't the nicest code i've ever written but it works. refactor if i feel like it
 
 		[Header("Components")]
-	[SerializeField] GameObject aimOrigin;
-	[SerializeField] GameObject[] bulletOrigins;
+	public GameObject aimOrigin;
+	public GameObject[] bulletOrigins;
 
 		[Header("Settings")]
-	[SerializeField] BulletType bulletType;
-	[SerializeField] FiringMode firingMode;
-	[SerializeField] FiringDirection firingDirection;
+	public BulletType bulletType;
+	public FiringMode firingMode;
+	public FiringDirection firingDirection;
 
+	public Vector3 fixVector;
 	public int numberOfBurstShots;
 	public float burstDuration;
 	public float sweepAngle;
 	public float weaponSpread;
 
-	GameplayMode gameplayMode;
-	Vector3 bulletDirectionScale;
-
-	SimpleBulletPool bulletPool;
-
+	bool initialized;
 	Player[] players;
+	GameplayMode gameplayMode;
+
+	Vector3 bulletDirectionScale;
+	SimpleBulletPool bulletPool;
 
 	public enum BulletType{
 		SLOW,
@@ -40,7 +41,7 @@ public class GenericEnemyWeapon : MonoBehaviour {
 	}
 
 	public enum FiringDirection{
-		NEGATIVEZ,
+		VECTOR,
 		FORWARD,
 		PLAYERDIRECT,
 		PLAYERPREDICT
@@ -51,6 +52,7 @@ public class GenericEnemyWeapon : MonoBehaviour {
 		this.gameplayMode = mode;
 		bulletDirectionScale = GetDirectionScaleVector();
 		SetAppropriateBulletPool();
+		initialized = true;
 	}
 
 	public void RespawnReset(){
@@ -58,6 +60,7 @@ public class GenericEnemyWeapon : MonoBehaviour {
 	}
 
 	public void Shoot(){
+		if(!initialized) throw new UnityException("weapon not initialized");
 		switch(firingMode){
 		case FiringMode.SINGLESHOT:
 			SingleShotFiringAction();
@@ -182,8 +185,8 @@ public class GenericEnemyWeapon : MonoBehaviour {
 
 	Vector3 GetFiringDirectionForTargetingMode(FiringDirection mode){
 		switch(mode){
-		case FiringDirection.NEGATIVEZ:
-			return Vector3.back;
+		case FiringDirection.VECTOR:
+			return fixVector.normalized;
 		case FiringDirection.FORWARD:
 			return transform.forward;
 		case FiringDirection.PLAYERDIRECT:

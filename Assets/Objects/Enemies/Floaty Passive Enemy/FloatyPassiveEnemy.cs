@@ -7,7 +7,6 @@ public class FloatyPassiveEnemy : GenericEnemy, IDamageable {
 	[SerializeField] float speed;
 	[SerializeField] int points;
 	[SerializeField] int maxHealth;
-	[SerializeField] Rigidbody rb;
 
 	int health;
 
@@ -60,21 +59,5 @@ public class FloatyPassiveEnemy : GenericEnemy, IDamageable {
 			ScoreSystem.Instance.AddScore(points);
 			gameObject.SetActive(false);
 		}
-	}
-
-	void SetRBTranslationConstraints (GameplayMode mode) {
-		RigidbodyConstraints rotationConstraints = rb.constraints & RigidbodyConstraints.FreezeRotation;
-		RigidbodyConstraints positionConstraints;
-		switch(mode){
-		case GameplayMode.TOPDOWN:
-			positionConstraints = RigidbodyConstraints.FreezePositionY;
-			break;
-		case GameplayMode.SIDE:
-			positionConstraints = RigidbodyConstraints.FreezePositionX;
-			break;
-		default:
-			throw new UnityException("unknown mode " + mode.ToString());
-		}
-		rb.constraints = positionConstraints | rotationConstraints;
 	}
 }

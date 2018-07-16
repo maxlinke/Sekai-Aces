@@ -4,16 +4,19 @@ using UnityEngine;
 
 public class RammingEnemy : GenericEnemy, IDamageable {
 
-	[SerializeField] float speed;
+	[SerializeField] float minSpeed;
+	[SerializeField] float maxSpeed;
 	[SerializeField] int points;
 	[SerializeField] int maxHealth;
-	[SerializeField] Rigidbody rb;
 	[SerializeField] float maxAngleToPlayerForTargeting;
 	[SerializeField] float maxAccel;
+	[SerializeField] bool dropPowerUponDeath;
+	[SerializeField] PowerUp.PowerUpType powerUpType;
 
 	Player[] players;
 
 	int health;
+	bool lastDamageWasWeaponDamage;
 
 	void Start () {
 		
@@ -28,8 +31,11 @@ public class RammingEnemy : GenericEnemy, IDamageable {
 	}
 
 	void FixedUpdate () {
-		Vector3 targetVector = GetTargetVector(GetTargetPlayer()) * speed;
-		Vector3 deltaV = targetVector - rb.velocity;
+		Vector3 targetVector = GetTargetVector(GetTargetPlayer());
+		float dot = Mathf.Clamp01(Vector3.Dot(targetVector.normalized, rb.velocity.normalized));
+		float speed = (dot * maxSpeed) + ((1f - dot) * minSpeed);
+		Vector3 targetVelocity = targetVector.normalized * speed;
+		Vector3 deltaV = targetVelocity - rb.velocity;
 		if(deltaV.magnitude > maxAccel * Time.fixedDeltaTime){
 			deltaV = deltaV.normalized * maxAccel * Time.fixedDeltaTime;
 		}
@@ -48,22 +54,25 @@ public class RammingEnemy : GenericEnemy, IDamageable {
 
 	public void WeaponDamage (int amount) {	//TODO all this could be generic
 		health -= amount;
+		lastDamageWasWeaponDamage = true;
 	}
 
 	public void CollisionDamage (int amount) {
 		health -= amount;
+		lastDamageWasWeaponDamage = false;
 	}
 
-	public void Kill (bool instantly) {
+	public void Kill (bool instantly) {		//i dont like this. 
 		health = 0;
+		lastDamageWasWeaponDamage = false;
 	}
 
 	void OnCollisionEnter (Collision collision) {	//TODO also this could be generic
 		IDamageable damageable = collision.gameObject.GetComponent<IDamageable>();
 		if(damageable != null){
 			damageable.CollisionDamage(1);
+			health = 0;
 		}
-		health = 0;
 	}
 
 	Player GetTargetPlayer () {
@@ -96,6 +105,7 @@ public class RammingEnemy : GenericEnemy, IDamageable {
 		if(targetPlayer != null){
 			Vector3 delta = targetPlayer.transform.position - this.transform.position;
 			float timeToTarget = Mathf.Clamp01(delta.magnitude / rb.velocity.magnitude);		//eeehh, better a dot-based thing. so project the velocity etc?
+			timeToTarget = 0f;
 			Vector3 playerPosThen = targetPlayer.transform.position + (targetPlayer.GetVelocity() * timeToTarget);
 			return (playerPosThen - transform.position).normalized;
 		}else{
@@ -105,25 +115,14 @@ public class RammingEnemy : GenericEnemy, IDamageable {
 
 	void DeathCheck () {	//TODO this could be generic
 		if(health <= 0){
+			if(lastDamageWasWeaponDamage && dropPowerUponDeath){
+				PowerUpPool.Instance.NewPowerUp(transform.position, powerUpType);
+			}
 			ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.FIREBALL_SMALL).NewEffect(transform.position, Random.insideUnitSphere, true, gameObject.layer);
 			ScoreSystem.Instance.AddScore(points);
 			gameObject.SetActive(false);
 		}
 	}
 
-	void SetRBTranslationConstraints (GameplayMode mode) {
-		RigidbodyConstraints rotationConstraints = rb.constraints & RigidbodyConstraints.FreezeRotation;
-		RigidbodyConstraints positionConstraints;
-		switch(mode){
-		case GameplayMode.TOPDOWN:
-			positionConstraints = RigidbodyConstraints.FreezePositionY;
-			break;
-		case GameplayMode.SIDE:
-			positionConstraints = RigidbodyConstraints.FreezePositionX;
-			break;
-		default:
-			throw new UnityException("unknown mode " + mode.ToString());
-		}
-		rb.constraints = positionConstraints | rotationConstraints;
-	}
+
 }

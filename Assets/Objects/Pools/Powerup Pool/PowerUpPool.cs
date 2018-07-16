@@ -8,6 +8,14 @@ public class PowerUpPool : RigidbodyPool {
 
 	int powerUpCount;
 
+	static PowerUpPool instance;
+	public static PowerUpPool Instance { get { return instance; } }
+
+	void Awake () {
+		if(instance != null) throw new UnityException("instance not null");
+		else instance = this;
+	}
+
 	void Update () {
 		base.SqrDistReturnCheck();
 		if(Input.GetKeyDown(KeyCode.I)) NewPowerUp(this.transform.position + Vector3.forward * 3f, PowerUp.PowerUpType.WEAPON);

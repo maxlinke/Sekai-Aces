@@ -73,7 +73,11 @@ public class PlayerMovementSystem : MonoBehaviour {
 			Vector2 inputVector = playerInput.GetMoveInput();
 			Vector3 transformedInput = TransformInput(inputVector);
 			velocity = GetDesiredVelocity(transformedInput);
-			modelEulerAngles = new Vector3(0f, 0f, -transformedInput.x * 45f);
+			if(mode.Equals(GameplayMode.SIDE)){
+				modelEulerAngles = new Vector3(0f, 0f, transformedInput.y * 35f);
+			}else{
+				modelEulerAngles = new Vector3(0f, 0f, -transformedInput.x * 35f);
+			}
 		}else{
 			velocity = dodgeVelocity;
 			modelEulerAngles = new Vector3(0f, 0f, 360f * pointInDodge * Mathf.Sign((dodgeStartPos - dodgeEndPos).x));

@@ -21,16 +21,19 @@ public class TrackFollower : MonoBehaviour {
 	float position;
 	float speed;
 
+	public float pos;	//so i can see stuff in the editor
+
 	Vector3 currentPos;
 	Vector3 lastPos;
 
 	void Update () {
 		transform.position = spline.MoveAlongSpline(ref position, speed * Time.deltaTime);
 		position -= (int)Mathf.Floor(position);
-		transform.rotation = spline.GetRotation(position);
+		transform.rotation = spline.GetRotation(position);	//TODO maybe also get the rotation a bit ahead and behind and average those together?
 
 		lastPos = currentPos;
 		currentPos = transform.position;
+		pos = position;
 	}
 
 	public void LevelReset () {
