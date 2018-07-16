@@ -16,6 +16,7 @@ public class ParticleEffectPool : ObjectPool {
 	List<PooledParticleEffect> returningEffects;
 
 	public enum EffectType{
+		EXPLOSION_AA,
 		FIREBALL_SMALL,
 		FIREBALL_MEDIUM,
 		BULLETHIT_FRIENDLY,
