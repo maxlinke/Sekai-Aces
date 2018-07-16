@@ -20,6 +20,7 @@ public class GameController : MonoBehaviour {
 	[SerializeField] IntroSequence introSequence;
 	[SerializeField] EnemySystem enemySystem;
 	[SerializeField] ScoreSystem scoreSystem;
+	[SerializeField] WorldObstacleContainer worldObstacleContainer;
 
 		[Header("Game Settings")]
 	[SerializeField] float levelResetPlayerControlDelay;
@@ -85,6 +86,7 @@ public class GameController : MonoBehaviour {
 //		enemySpawner.SetMode(initialMode);
 
 		enemySystem.LevelReset();
+		worldObstacleContainer.LevelReset();
 
 		foreach(ObjectPool pool in objectPools){
 			pool.ResetPool();

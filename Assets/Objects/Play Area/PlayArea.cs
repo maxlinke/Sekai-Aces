@@ -6,7 +6,7 @@ public class PlayArea : MonoBehaviour {
 		
 	[SerializeField] PrefabPlayAreaContents prefabContents;
 	[SerializeField] Background background;
-	[SerializeField] GameObject worldObstacleContainer;
+	[SerializeField] WorldObstacleContainer worldObstacleContainer;
 
 	GameObject playerSpawn;
 	GameObject playerRespawn;
