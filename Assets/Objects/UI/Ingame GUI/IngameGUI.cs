@@ -40,4 +40,8 @@ public class IngameGUI : MonoBehaviour {
 		scoreGUI.Initialize(scoreSystem, currentStage);
 	}
 
+	public void LevelReset () {
+		scoreGUI.LevelReset();
+	}
+
 }

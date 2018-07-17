@@ -6,15 +6,20 @@ public class BossEnemy : GenericEnemy, IDamageable {
 
 	[Header("Stuff")]
 	[SerializeField] GameObject regularPosition;
+	[SerializeField] GameObject sineUpPosition;
+	[SerializeField] GameObject sineDownPosition;
+	[SerializeField] GameObject ramPreparePosition;
+	[SerializeField] GameObject ramPosition;
 
 	[Header("Settings")]
 	[SerializeField] int maxHP;
 	[SerializeField] int points;
 	[SerializeField] float moveSpeed;
-	[SerializeField] float oscillateTime;
-	[SerializeField] float oscillateWidth;
+	[SerializeField] float oscillateSpeed;
 	[SerializeField] float ramPrepareSpeed;
 	[SerializeField] float ramSpeed;
+	[SerializeField] int straightShootTickInterval;
+	[SerializeField] int burstShootWaitTicks;
 
 	[Header("Components")]
 	[SerializeField] GenericEnemyWeapon[] straightShooterWeapons;
@@ -23,34 +28,108 @@ public class BossEnemy : GenericEnemy, IDamageable {
 	GameController gameController;
 	CombatState state;
 	int hp;
+	float sineMotionStartTime;
+	bool gameEndMessageSent;
+
+	int fixedUpdateTicks;
+	int fixedUpdateTicksSinceLastMove;
 
 	enum CombatState {
 		MOVINGTOREGULARPOSITION,
-		SINEMOTION,
+		SINEUP1, SINEDOWN1, SINEUP2, SINEDOWN2,
+		MOVINGBACKTOREGULARPOSITION,
 		BURSTFIRING,
-		RAMMING
+		RAMPREPARE,
+		RAMEXECUTE
 	}
 
-	void FixedUpdate () {
-		switch(state){
-		case CombatState.MOVINGTOREGULARPOSITION:
-			MoveToRegularPosition();
-			break;
-		case CombatState.SINEMOTION:
-
-			break;
-		case CombatState.BURSTFIRING:
-
-			break;
-		case CombatState.RAMMING:
-
-			break;
-		default: throw new UnityException("unknown state " + state.ToString());
+	void Update () {
+		if(hp <= 0){
+			rb.useGravity = true;
+			ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.FIREBALL_MEDIUM).NewEffect(transform.position, Random.insideUnitSphere, true, gameObject.layer);
+			if(!gameEndMessageSent){
+				GameController.Instance.EndGame();
+				gameEndMessageSent = true;
+			}
 		}
 	}
 
-	void MoveToRegularPosition () {
+	void FixedUpdate () {
+		if(hp > 0){
+			rb.velocity = Vector3.zero;
+			fixedUpdateTicks++;
+			fixedUpdateTicksSinceLastMove++;
+			switch(state){
+			case CombatState.MOVINGTOREGULARPOSITION:
+				MoveToPosition(regularPosition.transform.position, moveSpeed, CombatState.SINEUP1);
+				break;
+			case CombatState.SINEUP1:
+				MoveToPosition(sineUpPosition.transform.position, oscillateSpeed, CombatState.SINEDOWN1);
+				FireStraightWeapon();
+				break;
+			case CombatState.SINEDOWN1:
+				MoveToPosition(sineDownPosition.transform.position, oscillateSpeed, CombatState.SINEUP2);
+				FireStraightWeapon();
+				break;
+			case CombatState.SINEUP2:
+				MoveToPosition(sineUpPosition.transform.position, oscillateSpeed, CombatState.SINEDOWN2);
+				FireStraightWeapon();
+				break;
+			case CombatState.SINEDOWN2:
+				MoveToPosition(sineDownPosition.transform.position, oscillateSpeed, CombatState.MOVINGBACKTOREGULARPOSITION);
+				FireStraightWeapon();
+				break;
+			case CombatState.MOVINGBACKTOREGULARPOSITION:
+				MoveToPosition(regularPosition.transform.position, moveSpeed, CombatState.BURSTFIRING);
+				break;
+			case CombatState.BURSTFIRING:
+				BurstFire(CombatState.RAMPREPARE);
+				break;
+			case CombatState.RAMPREPARE:
+				MoveToPosition(ramPreparePosition.transform.position, ramPrepareSpeed, CombatState.RAMEXECUTE);
+				break;
+			case CombatState.RAMEXECUTE:
+				MoveToPosition(ramPosition.transform.position, ramSpeed, CombatState.MOVINGTOREGULARPOSITION);
+				break;
+			default: throw new UnityException("unknown state " + state.ToString());
+			}
+		}
+	}
 
+	void MoveToPosition (Vector3 point, float speed, CombatState afterState) {
+		Vector3 delta = point - this.transform.position;
+		Vector3 v;
+		if(delta.magnitude < (speed * Time.fixedDeltaTime)){
+			v = delta / Time.fixedDeltaTime;
+			state = afterState;
+			fixedUpdateTicksSinceLastMove = 0;
+		}else{
+			v = delta.normalized * speed;
+		}
+		rb.velocity = v;
+	}
+
+	void BurstFire (CombatState afterState) {
+		if(fixedUpdateTicksSinceLastMove == 2){
+			FireBurstWeapon();
+		}
+		if(fixedUpdateTicksSinceLastMove > burstShootWaitTicks){
+			state = afterState;
+		}
+	}
+
+	void FireStraightWeapon () {
+		if((fixedUpdateTicks % straightShootTickInterval) == 0){
+			for(int i=0; i<straightShooterWeapons.Length; i++){
+				straightShooterWeapons[i].Shoot();
+			}
+		}
+	}
+
+	void FireBurstWeapon () {
+		for(int i=0; i<burstWeapons.Length; i++){
+			burstWeapons[i].Shoot();
+		}
 	}
 
 	public override void Initialize (Player[] players, GameplayMode mode) {
@@ -64,8 +143,10 @@ public class BossEnemy : GenericEnemy, IDamageable {
 	}
 
 	public override void LevelReset () {
+		rb.useGravity = false;
 		state = CombatState.MOVINGTOREGULARPOSITION;
 		hp = maxHP;
+		gameEndMessageSent = false;
 	}
 
 	public void WeaponDamage (int amount) {

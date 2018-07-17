@@ -59,7 +59,12 @@ public class ScoreGUI : MonoBehaviour {
 //		int high1 = PlayerPrefManager.GetInt("highscore_1_" + currentStage.ToString());
 //		int high2 = PlayerPrefManager.GetInt("highscore_2_" + currentStage.ToString());
 //		int high3 = PlayerPrefManager.GetInt("highscore_3_" + currentStage.ToString());
-		Debug.Log("TODO");
+		int topScore = PlayerPrefs.GetInt("test_highscore", 5000);
+		highscoreText.text = "HI " + StringifyScore(topScore);
 		//TODO loading (and also saving) highscores
+	}
+
+	public void LevelReset () {
+		ReloadHighscore();
 	}
 }

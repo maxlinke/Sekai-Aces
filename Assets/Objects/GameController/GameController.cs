@@ -34,6 +34,9 @@ public class GameController : MonoBehaviour {
 		[Header("Level Settings")]
 	[SerializeField] GameplayMode initialMode;
 
+	static GameController instance;
+	public static GameController Instance { get { return instance; } }
+
 	LevelLoader.Stage currentStage;
 	GameDifficulty.DifficultyLevel difficulty;
 	List<ObjectPool> objectPools;
@@ -43,7 +46,35 @@ public class GameController : MonoBehaviour {
 	bool[] playerGameover;
 	int playerMaxLives;
 
+	//TODO remove this below (until start)
+	public void EndGame () {
+		StopCoroutine(EndGameCoroutine());
+		StartCoroutine(EndGameCoroutine());
+	}
+
+	IEnumerator EndGameCoroutine () {
+		float waitBefore = 2f;
+		float fadeDuration = 1f;
+		yield return new WaitForSeconds(waitBefore);
+		float progress = 0f;
+		float startTime = Time.unscaledTime;
+		while(progress < 1f){
+			progress = Mathf.Clamp01((Time.unscaledTime - startTime) / fadeDuration);
+			Time.timeScale = 1f - progress;
+			yield return null;
+		}
+		Time.timeScale = 0f;
+		pauseMenu.InitializeForGameover();
+		pauseMenu.gameObject.SetActive(true);
+		int topScore = PlayerPrefs.GetInt("test_highscore", 5000);
+		int currentScore = ScoreSystem.Instance.Score;
+		if(currentScore > topScore) PlayerPrefs.SetInt("test_highscore", currentScore);
+	}
+
+
 	void Start () {
+		if(instance != null) throw new UnityException("instance not null");
+		else instance = this;
 		pauseMenu.gameController = this;
 		introSequence.gameController = this;
 		objectPools = new List<ObjectPool>();
@@ -73,6 +104,7 @@ public class GameController : MonoBehaviour {
 		scoreSystem.ResetScore();
 
 		gui.gameObject.SetActive(true);		//TODO only enable the ui upon player control
+		gui.LevelReset();
 		pauseMenu.gameObject.SetActive(false);
 		cameraShakeModule.StopAllShaking();
 
