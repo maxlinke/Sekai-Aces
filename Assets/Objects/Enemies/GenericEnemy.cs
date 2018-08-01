@@ -31,6 +31,8 @@ public abstract class GenericEnemy : MonoBehaviour, IDamageable {
 	protected virtual void OnTriggerExit (Collider otherCollider) {
 		if(otherCollider.CompareTag("ActiveEnemyArea")){
 			inActiveEnemyArea = false;
+			gameObject.SetActive(false);
+			Debug.Log("Deactivated " + gameObject.name + " because it left the area");
 		}
 	}
 
