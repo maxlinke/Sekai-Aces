@@ -42,8 +42,4 @@ public class TestingSatDish : MonoBehaviour, IDamageable, ILevelResetee {
 	public void CollisionDamage (int amount) {
 		hitpoints -= amount;
 	}
-
-	public void Kill (bool instantly) {
-		hitpoints = 0;
-	}
 }

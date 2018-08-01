@@ -8,6 +8,4 @@ public interface IDamageable{
 
 	void CollisionDamage(int amount);
 
-	void Kill(bool instantly);
-
 }

@@ -53,10 +53,6 @@ public class TestEnemyScript : MonoBehaviour, IDamageable {
 		currentFallOffTime = fallOffTime * amount;
 	}
 
-	public void Kill(bool instantly){
-		lastDamageTime = Time.time;
-	}
-
 	void DoCollisionDamage(GameObject otherObject){
 		IDamageable damageable = otherObject.GetComponent<IDamageable>();
 		if(damageable != null) damageable.CollisionDamage(1);

@@ -87,13 +87,6 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		}
 	}
 
-	public void Kill(bool instantly){
-		if(!invulnerable){
-			lastDamageWasCollision = instantly;
-			Damage(hitPoints);
-		}
-	}
-
 	public void ObstacleCollision () {
 		lastDamageWasCollision = true;
 		Damage(hitPoints);
