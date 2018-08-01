@@ -14,6 +14,10 @@ public class ActivatableGameObjectContainer : ActivatableContainer {
 		}
 	}
 
+	protected override void DeactivateContainer () {
+		ResetContainer();
+	}
+
 	protected override void ActivateAllAtOnce () {
 		foreach(GameObject obj in objects){
 			obj.SetActive(true);

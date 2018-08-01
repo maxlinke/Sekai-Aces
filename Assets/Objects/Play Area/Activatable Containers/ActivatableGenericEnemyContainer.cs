@@ -41,8 +41,14 @@ public class ActivatableGenericEnemyContainer : ActivatableContainer {
 		}
 	}
 
-	protected override void ActivateStaggered (){
+	protected override void ActivateStaggered () {
 		StartCoroutine(StaggeredActivationCoroutine());
+	}
+
+	protected override void DeactivateContainer () {
+		foreach(GenericEnemy enemy in enemies){
+			enemy.Disappear();
+		}
 	}
 
 	IEnumerator StaggeredActivationCoroutine () {

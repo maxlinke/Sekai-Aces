@@ -39,6 +39,11 @@ public abstract class ActivatableContainer : MonoBehaviour {
 		}
 	}
 
+	public void Deactivate () {
+		activated = false;
+		DeactivateContainer();
+	}
+
 	public void LevelReset () {
 		activated = false;
 		ResetContainer();
@@ -47,6 +52,8 @@ public abstract class ActivatableContainer : MonoBehaviour {
 	protected abstract void ActivateAllAtOnce ();
 
 	protected abstract void ActivateStaggered ();
+
+	protected abstract void DeactivateContainer ();
 
 	protected abstract void ResetContainer ();
 

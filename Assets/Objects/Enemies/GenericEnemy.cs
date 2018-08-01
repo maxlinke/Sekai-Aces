@@ -59,6 +59,8 @@ public abstract class GenericEnemy : MonoBehaviour, IDamageable {
 		inActiveEnemyArea = false;
 	}
 
+	public abstract void Disappear ();
+
 	//IDamagable
 
 	public void WeaponDamage (int amount) {
