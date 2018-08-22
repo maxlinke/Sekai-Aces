@@ -20,10 +20,6 @@ public class PlayerDeathSystem : MonoBehaviour {
 	void Start () {
 		fireballPool = ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.FIREBALL_MEDIUM);
 	}
-	
-	void Update () {
-		
-	}
 
 	void OnCollisionEnter(Collision collision){
 		if(running){
@@ -44,8 +40,12 @@ public class PlayerDeathSystem : MonoBehaviour {
 	}
 
 	public void Explode(){
-		if(this.gameObject.layer != LayerMask.NameToLayer("Background")) TransferToBackground();
-		fireballPool.NewEffect(transform.position, transform.forward, false, gameObject.layer);
+		if(this.gameObject.layer != LayerMask.NameToLayer("Background")){
+			fireballPool.NewEffect(transform.position, transform.forward, true);
+			TransferToBackground();
+		}else{
+			fireballPool.NewEffect(transform.position, transform.forward, false);
+		}
 		fireParticleSystem.Stop(true);
 		playerModel.Hide();
 		hitbox.enabled = false;

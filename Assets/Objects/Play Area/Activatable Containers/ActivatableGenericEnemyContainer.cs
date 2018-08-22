@@ -12,7 +12,7 @@ public class ActivatableGenericEnemyContainer : ActivatableContainer {
 	Vector3[] initialPositions;
 	Quaternion[] initialRotations;
 
-	public void Initialize (Player[] players) {
+	public void Initialize (Player[] players, PlayArea playArea) {
 		if(autoCreateArray){
 			enemies = GetComponentsInChildren<GenericEnemy>();
 		}
@@ -21,7 +21,7 @@ public class ActivatableGenericEnemyContainer : ActivatableContainer {
 		for(int i=0; i<enemies.Length; i++){
 			initialPositions[i] = enemies[i].transform.position;
 			initialRotations[i] = enemies[i].transform.rotation;
-			enemies[i].Initialize(players, mode);
+			enemies[i].Initialize(players, mode, playArea);
 		}
 	}
 

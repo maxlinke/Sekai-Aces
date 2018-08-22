@@ -9,20 +9,15 @@ public class PooledParticleEffect : MonoBehaviour {
 
 	[HideInInspector] public ParticleEffectPool pool;
 
-	void Start () {
-		
-	}
-	
-	void Update () {
-		
-	}
+	public ParticleSystem MainParticleSystem { get { return mainParticleSystem; } }
 
-	void OnEnable(){
+	void OnEnable () {
+		ScaleIncludingAllChildren(gameObject, Vector3.one);		//TODO yes ? no ? scale on enable ?
 		mainParticleSystem.Play(true);
 		StartCoroutine(CheckForReturn());
 	}
 
-	IEnumerator CheckForReturn(){
+	IEnumerator CheckForReturn () {
 		while(true){
 			yield return new WaitForSeconds(checkFrequency);
 			if(!mainParticleSystem.IsAlive(true)){
@@ -32,16 +27,24 @@ public class PooledParticleEffect : MonoBehaviour {
 		}
 	}
 
-	public void Deactivate(){
+	public void Deactivate () {
 		StopAllCoroutines();
 		mainParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 	}
 
-	public void SetLayerIncludingAllChildren(GameObject obj, int layer){
+	public void SetLayerIncludingAllChildren (GameObject obj, int layer) {
 		obj.layer = layer;
 		for(int i=0; i<obj.transform.childCount; i++){
 			GameObject child = obj.transform.GetChild(i).gameObject;
 			SetLayerIncludingAllChildren(child, layer);
+		}
+	}
+
+	public void ScaleIncludingAllChildren (GameObject obj, Vector3 localScale) {
+		obj.transform.localScale = localScale;
+		for(int i=0; i<obj.transform.childCount; i++){
+			GameObject child = obj.transform.GetChild(i).gameObject;
+			ScaleIncludingAllChildren(child, localScale);
 		}
 	}
 

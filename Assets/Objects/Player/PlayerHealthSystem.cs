@@ -40,7 +40,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 		if((hitPoints <= 0) && (hitPoints < lastHitPoints)){	//TODO this can be moved directly into damage, right? just move the camerashake code a bit?
 			smokeParticleSystem.Stop();
 			playerController.InitiateDeath(lastDamageWasCollision);
-			CameraShakeModule.Shake(deathShakeStrength, deathShakeDuration, deathShakeSpeed);	//this doesn't need to be static..
+			CameraShake.Instance.NewShake(deathShakeStrength, deathShakeDuration, deathShakeSpeed);
 		}
 		lastHitPoints = hitPoints;
 	}
@@ -95,7 +95,7 @@ public class PlayerHealthSystem : MonoBehaviour, IDamageable {
 
 	void Damage(int amount){
 		hitPoints -= amount;
-		CameraShakeModule.Shake(hitShakeStrength, hitShakeDuration, hitShakeSpeed);
+		CameraShake.Instance.NewShake(hitShakeStrength, hitShakeDuration, hitShakeSpeed);
 		if((hitPoints == 1) && (hitPoints < lastHitPoints)){
 			//TODO clank sound
 			smokeParticleSystem.Play();

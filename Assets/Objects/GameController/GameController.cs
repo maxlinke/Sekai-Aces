@@ -16,7 +16,7 @@ public class GameController : MonoBehaviour {
 	[SerializeField] TrackFollower levelTrackFollower;
 	[SerializeField] IngameGUI gui;
 	[SerializeField] PauseMenu pauseMenu;
-	[SerializeField] CameraShakeModule cameraShakeModule;
+	[SerializeField] CameraShake cameraShakeModule;
 	[SerializeField] IntroSequence introSequence;
 	[SerializeField] EnemySystem enemySystem;
 	[SerializeField] ScoreSystem scoreSystem;

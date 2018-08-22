@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraShakeModule : MonoBehaviour, IPlayerPrefSettingsObserver {
+public class CameraShake : MonoBehaviour, IPlayerPrefSettingsObserver {
 
 	[SerializeField] GameObject[] shakeObjects;
 
-	static CameraShakeModule instance;
+	static CameraShake instance;
+
+	public static CameraShake Instance { get { return instance; } }
+
+	public Vector3 ShakeOffset { get { return shakeOffset; } }
 
 	Vector3 shakeOffset;
 	float universalShakeMultiplier;
@@ -43,11 +47,7 @@ public class CameraShakeModule : MonoBehaviour, IPlayerPrefSettingsObserver {
 		}
 	}
 
-	public static void Shake (float strength, float duration, float speed) {
-		instance.StartShakeCoroutine(strength, duration, speed);
-	}
-
-	void StartShakeCoroutine (float strength, float duration, float speed) {
+	public void NewShake (float strength, float duration, float speed) {
 		StartCoroutine(ShakeCoroutine(strength, duration, speed));
 	}
 

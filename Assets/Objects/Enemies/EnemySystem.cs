@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class EnemySystem : MonoBehaviour {
 
+	[SerializeField] PlayArea playArea;
+
 	public void Initialize (Player[] players) {
 		ActivatableGenericEnemyContainer[] agec = gameObject.GetComponentsInChildren<ActivatableGenericEnemyContainer>(true);
 		foreach(ActivatableGenericEnemyContainer container in agec){
-			container.Initialize(players);
+			container.Initialize(players, playArea);
 		}
 		LevelReset();
 	}

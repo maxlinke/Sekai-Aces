@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GenericEnemyWeapon : MonoBehaviour {
+public class GenericEnemyWeapon : MonoBehaviour, IEnemyComponent {
 
 	//TODO this isn't the nicest code i've ever written but it works. refactor if i feel like it
 
@@ -47,7 +47,7 @@ public class GenericEnemyWeapon : MonoBehaviour {
 		PLAYERPREDICT
 	}
 
-	public void Initialize(Player[] players, GameplayMode mode){
+	public void Initialize(Player[] players, GameplayMode mode, PlayArea playArea){
 		this.players = players;
 		this.gameplayMode = mode;
 		bulletDirectionScale = GetDirectionScaleVector();
@@ -55,7 +55,7 @@ public class GenericEnemyWeapon : MonoBehaviour {
 		initialized = true;
 	}
 
-	public void RespawnReset(){
+	public void LevelReset(){
 		StopAllCoroutines();
 	}
 
@@ -228,7 +228,7 @@ public class GenericEnemyWeapon : MonoBehaviour {
 		if(nearestLivingPlayer != null){
 			Vector3 difference = (nearestLivingPlayer.transform.position - aimOrigin.transform.position);
 			float timeToArrival = difference.magnitude / bulletPool.BulletSpeed;
-			Vector3 positionThen = nearestLivingPlayer.transform.position + (nearestLivingPlayer.GetVelocity() * timeToArrival);
+			Vector3 positionThen = nearestLivingPlayer.transform.position + (nearestLivingPlayer.velocity * timeToArrival);
 			return (positionThen - this.transform.position).normalized;
 		}else{
 			return Vector3.zero;

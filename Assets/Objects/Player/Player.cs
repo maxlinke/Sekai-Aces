@@ -31,11 +31,18 @@ public class Player : MonoBehaviour {
 	[SerializeField] GameObject griffonSPWPrefab;
 	[SerializeField] GameObject razorbackSPWPrefab;
 
+	public Vector3 velocity { get { return rb.velocity;	} }
 	public int PlayerNumber{get{return _playerNumber;}}
-	public GameplayMode Mode{set{playerMovementSystem.Mode = value;playerWeaponSystem.Mode = value;}}
-	public bool IsDead{get{return playerHealthSystem.IsDead();}}
-	public bool IsRespawning{get{return isRespawning;}}
-	public bool IsGameover{get{return (IsDead && (lives == 0));}}
+	public bool IsDead { get { return playerHealthSystem.IsDead(); } }
+	public bool IsRespawning { get { return isRespawning; } }
+	public bool IsGameover { get { return (IsDead && (lives == 0)); } }
+
+	public GameplayMode Mode { set { 
+			playerMovementSystem.Mode = value;
+			playerWeaponSystem.Mode = value;
+		}
+	}
+
 
 	int lives;
 	int _playerNumber;
@@ -242,10 +249,6 @@ public class Player : MonoBehaviour {
 			GameObject child = obj.transform.GetChild(i).gameObject;
 			SetLayerIncludingAllChildren(child, layer);
 		}
-	}
-
-	public Vector3 GetVelocity(){
-		return rb.velocity;
 	}
 
 	GameObject InstantiatePrefabAsChild(GameObject prefab){

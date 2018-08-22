@@ -20,8 +20,8 @@ public class TestEnemyScript : MonoBehaviour, IDamageable {
 	float nextFire;
 
 	void Start () {
-		wep.Initialize(GameObject.FindObjectsOfType<Player>(), GameplayMode.TOPDOWN);
-		wep.RespawnReset();
+		wep.Initialize(GameObject.FindObjectsOfType<Player>(), GameplayMode.TOPDOWN, GameObject.FindObjectOfType<PlayArea>());
+		wep.LevelReset();
 
 		currentFallOffTime = fallOffTime;
 		lastDamageTime = Mathf.NegativeInfinity;
