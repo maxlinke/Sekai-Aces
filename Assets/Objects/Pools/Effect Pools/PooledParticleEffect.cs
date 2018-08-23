@@ -12,7 +12,6 @@ public class PooledParticleEffect : MonoBehaviour {
 	public ParticleSystem MainParticleSystem { get { return mainParticleSystem; } }
 
 	void OnEnable () {
-		ScaleIncludingAllChildren(gameObject, Vector3.one);		//TODO yes ? no ? scale on enable ?
 		mainParticleSystem.Play(true);
 		StartCoroutine(CheckForReturn());
 	}
@@ -27,9 +26,10 @@ public class PooledParticleEffect : MonoBehaviour {
 		}
 	}
 
-	public void Deactivate () {
+	public void Deactivate (bool clearEmissions = true) {
 		StopAllCoroutines();
-		mainParticleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+		ParticleSystemStopBehavior stopBehavior = (clearEmissions ? ParticleSystemStopBehavior.StopEmittingAndClear : ParticleSystemStopBehavior.StopEmitting);
+		mainParticleSystem.Stop(true, stopBehavior);
 	}
 
 	public void SetLayerIncludingAllChildren (GameObject obj, int layer) {

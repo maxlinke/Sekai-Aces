@@ -20,7 +20,9 @@ public class ParticleEffectPool : ObjectPool {
 		FIREBALL_SMALL,
 		FIREBALL_MEDIUM,
 		BULLETHIT_FRIENDLY,
-		BULLETHIT_ENEMY
+		BULLETHIT_ENEMY,
+		CHARGE_FRIENDLY,
+		CHARGE_ENEMY
 	}
 
 	static ParticleEffectPool () {
@@ -82,6 +84,7 @@ public class ParticleEffectPool : ObjectPool {
 		effect.transform.position = position;
 		effect.transform.localRotation = Quaternion.LookRotation(direction);
 		effect.SetLayerIncludingAllChildren(effect.gameObject, layer);
+		effect.ScaleIncludingAllChildren(effect.gameObject, Vector3.one);
 		activeEffects.Add(effect);
 		return effect;
 	}
