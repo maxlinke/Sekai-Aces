@@ -60,17 +60,7 @@ public class ParticleEffectPool : ObjectPool {
 		}
 	}
 
-	public PooledParticleEffect NewEffect (Vector3 position, Vector3 direction, bool onPlayArea) {
-		Transform parent = (onPlayArea ? this.transform : null);
-		int layer = (onPlayArea ? LayerMask.NameToLayer("Default") : LayerMask.NameToLayer("Background"));
-		return NewEffect(position, direction, parent, layer);
-	}
-
-	public PooledParticleEffect NewEffect (Vector3 position, Vector3 direction, bool onPlayArea, int layer) {
-		return NewEffect(position, direction, (onPlayArea ? this.transform : null), layer);
-	}
-
-	public PooledParticleEffect NewEffect (Vector3 position, Vector3 direction, Transform parent, int layer) {
+	public PooledParticleEffect NewEffect () {
 		PooledParticleEffect effect;
 		if(!TryTakeEffectFromInactivePool(out effect)){
 			effectCount++;
@@ -80,12 +70,23 @@ public class ParticleEffectPool : ObjectPool {
 			effect.pool = this;
 		}
 		effect.gameObject.SetActive(true);
+		activeEffects.Add(effect);
+		return effect;
+	}
+
+	public PooledParticleEffect NewEffect (Vector3 position, Vector3 direction, bool onPlayArea) {
+		Transform parent = (onPlayArea ? this.transform : null);
+		int layer = (onPlayArea ? LayerMask.NameToLayer("Default") : LayerMask.NameToLayer("Background"));
+		return NewEffect(position, direction, parent, layer);
+	}
+
+	public PooledParticleEffect NewEffect (Vector3 position, Vector3 direction, Transform parent, int layer) {
+		PooledParticleEffect effect = NewEffect();
 		effect.gameObject.transform.parent = parent;
 		effect.transform.position = position;
 		effect.transform.localRotation = Quaternion.LookRotation(direction);
 		effect.SetLayerIncludingAllChildren(effect.gameObject, layer);
 		effect.ScaleIncludingAllChildren(effect.gameObject, Vector3.one);
-		activeEffects.Add(effect);
 		return effect;
 	}
 

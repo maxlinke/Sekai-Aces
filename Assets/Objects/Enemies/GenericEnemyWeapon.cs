@@ -21,12 +21,16 @@ public class GenericEnemyWeapon : MonoBehaviour, IEnemyComponent {
 	public float sweepAngle;
 	public float weaponSpread;
 
+	public bool chargeUp;
+	public float chargeTime;
+
 	bool initialized;
 	Player[] players;
 	GameplayMode gameplayMode;
 
 	Vector3 bulletDirectionScale;
 	SimpleBulletPool bulletPool;
+	ParticleEffectPool chargeEffectPool;
 
 	public enum BulletType{
 		SLOW,
@@ -52,6 +56,7 @@ public class GenericEnemyWeapon : MonoBehaviour, IEnemyComponent {
 		this.gameplayMode = mode;
 		bulletDirectionScale = GetDirectionScaleVector();
 		SetAppropriateBulletPool();
+		chargeEffectPool = ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.CHARGE_ENEMY);
 		initialized = true;
 	}
 
@@ -61,6 +66,14 @@ public class GenericEnemyWeapon : MonoBehaviour, IEnemyComponent {
 
 	public void Shoot(){
 		if(!initialized) throw new UnityException("weapon not initialized");
+		if(chargeUp){
+			StartCoroutine(ChargeAndShoot(chargeTime));
+		}else{
+			ActuallyShoot();
+		}
+	}
+
+	void ActuallyShoot () {
 		switch(firingMode){
 		case FiringMode.SINGLESHOT:
 			SingleShotFiringAction();
@@ -72,6 +85,22 @@ public class GenericEnemyWeapon : MonoBehaviour, IEnemyComponent {
 			StartCoroutine(SweepingBurstFiringAction());
 			break;
 		}
+	}
+
+	IEnumerator ChargeAndShoot (float chargeTime) {
+		PooledParticleEffect[] chargeEffects = new PooledParticleEffect[bulletOrigins.Length];
+		for(int i=0; i<bulletOrigins.Length; i++){
+			chargeEffects[i] = chargeEffectPool.NewEffect();
+			chargeEffects[i].gameObject.layer = LayerMask.NameToLayer("Default");
+			chargeEffects[i].transform.parent = bulletOrigins[i].transform;
+			chargeEffects[i].transform.localPosition = Vector3.zero;
+			chargeEffects[i].transform.localRotation = Quaternion.identity;
+		}
+		yield return new WaitForSeconds(chargeTime);
+		for(int i=0; i<chargeEffects.Length; i++){
+			chargeEffects[i].Deactivate(true);
+		}
+		ActuallyShoot();
 	}
 
 	public Vector3 GetShootDirection(){

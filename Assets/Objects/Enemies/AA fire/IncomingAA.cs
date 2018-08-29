@@ -17,7 +17,8 @@ public class IncomingAA : MonoBehaviour {
 		if((Time.time > explodeTime) && mr.enabled){
 			mr.enabled = false;
 			coll.enabled = true;
-			ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.EXPLOSION_AA).NewEffect(transform.position, transform.forward, true, gameObject.layer);
+//			ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.EXPLOSION_AA).NewEffect(transform.position, transform.forward, true, gameObject.layer);
+			ParticleEffectPool.GetPool(ParticleEffectPool.EffectType.EXPLOSION_AA).NewEffect(transform.position, transform.forward, true);
 		}
 		if(coll.enabled){
 			fixedUpdateTicks++;
