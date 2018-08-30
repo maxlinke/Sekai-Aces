@@ -10,9 +10,9 @@ public abstract class GenericEnemy : MonoBehaviour, IDamageable, IEnemyComponent
 		[Header("Generic Settings")]
 	[SerializeField] protected int maxHealth;
 	[SerializeField] protected int pointValue;
-	[SerializeField] protected int dealtCollisionDamage;
-	[SerializeField] protected bool vulnerableOutsideEnemyArea;
-	[SerializeField] protected bool deactivateUponLeavingEnemyArea;
+	[SerializeField] protected int dealtCollisionDamage = 1;
+	[SerializeField] protected bool vulnerableOutsideEnemyArea = false;
+	[SerializeField] protected bool deactivateUponLeavingEnemyArea = true;
 
 		[Header("Default Death Effect (ignore this if the enemy has a custom death action)")]
 	[SerializeField] protected ParticleEffectPool.EffectType deathEffect;
@@ -54,7 +54,7 @@ public abstract class GenericEnemy : MonoBehaviour, IDamageable, IEnemyComponent
 		}
 	}
 
-	//generic enemy
+	//IEnemyComponent
 
 	public virtual void Initialize (Player[] players, GameplayMode gameplayMode, PlayArea playArea) {
 		this.players = players;
@@ -69,6 +69,8 @@ public abstract class GenericEnemy : MonoBehaviour, IDamageable, IEnemyComponent
 		UpdateHitboxTags();
 		//for example reset movement and weapons
 	}
+
+	//generic enemy
 
 	public abstract void Disappear ();
 

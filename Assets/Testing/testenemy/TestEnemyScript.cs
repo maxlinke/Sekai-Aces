@@ -12,7 +12,7 @@ public class TestEnemyScript : MonoBehaviour, IDamageable {
 	[SerializeField] float oscillateWidth;
 	[SerializeField] float fireInterval;
 
-	[SerializeField] GenericEnemyWeapon wep;
+	[SerializeField] SimpleEnemyBulletWeapon wep;
 
 	MaterialPropertyBlock mpb;
 	float lastDamageTime;

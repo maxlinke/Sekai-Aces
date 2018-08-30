@@ -5,7 +5,7 @@ using UnityEngine;
 public class TestGenericEnemy : GenericEnemy {
 
 	[SerializeField] TestGenericEnemyMovement movement;
-	[SerializeField] GenericEnemyWeapon weapon;
+	[SerializeField] SimpleEnemyBulletWeapon weapon;
 	[SerializeField] KeyCode debugShootKey;
 
 	public override void Initialize (Player[] players, GameplayMode gameplayMode, PlayArea playArea) {
