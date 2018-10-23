@@ -43,7 +43,7 @@ public class ParticleEffectPool : ObjectPool {
 
 	public override void ResetPool () {
 		foreach(PooledParticleEffect effect in activeEffects){
-			effect.Deactivate();
+			effect.Deactivate(true);
 			returningEffects.Add(effect);
 		}
 		foreach(PooledParticleEffect effect in returningEffects){

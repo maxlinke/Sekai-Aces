@@ -16,18 +16,21 @@ public class PooledParticleEffect : MonoBehaviour {
 		StartCoroutine(CheckForReturn());
 	}
 
+	void OnDisable () {
+		StopAllCoroutines();
+	}
+
 	IEnumerator CheckForReturn () {
 		while(true){
 			yield return new WaitForSeconds(checkFrequency);
 			if(!mainParticleSystem.IsAlive(true)){
-				Deactivate();
 				pool.ReturnToInactivePool(this);
+				yield break;
 			}
 		}
 	}
 
 	public void Deactivate (bool clearEmissions = true) {
-		StopAllCoroutines();
 		ParticleSystemStopBehavior stopBehavior = (clearEmissions ? ParticleSystemStopBehavior.StopEmittingAndClear : ParticleSystemStopBehavior.StopEmitting);
 		mainParticleSystem.Stop(true, stopBehavior);
 	}
